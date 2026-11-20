@@ -8,6 +8,8 @@ Live demo: [https://battery-because.vercel.app](https://battery-because.vercel.a
 
 Because is a console for owners and operators of grid-scale batteries in Europe. An algorithm trades the asset across day-ahead, intraday and balancing markets. The screen shows the state and the reason, not a bare number.
 
+Project passport: [docs/PROJECT.md](docs/PROJECT.md).
+
 ## The problem
 
 Battery owners hand an asset to an algorithm and get a revenue figure back. A number without a reason scares people. A number with a reason builds trust. *"Yesterday was cloudy and windy, prices were flat, so the battery earned less."*
