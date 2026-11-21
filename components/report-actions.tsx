@@ -52,7 +52,7 @@ export function ReportActions({
           onChange={(event) => setNote(event.target.value)}
           onBlur={() => demo.setNote(periodId, note)}
           rows={4}
-          className="rounded-[6px] border border-border bg-surface p-2"
+          className="field"
           placeholder="This note is included in the PDF."
         />
       </label>

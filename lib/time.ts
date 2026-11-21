@@ -97,3 +97,32 @@ export function zoneLabel(timeZone: string): string {
 }
 
 export const DELAY_FROM = "2026-11-19T13:15:00.000Z";
+
+/** Offset of a time zone at a given instant, in milliseconds (local wall time minus UTC). */
+function zoneOffsetMs(ts: number, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(new Date(ts));
+  const get = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+  return Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second")) - ts;
+}
+
+/**
+ * Reads a `datetime-local` value ("2026-11-23T09:00") as wall time in the asset's zone.
+ * `new Date(value)` would use the browser's zone, which differs between server and client.
+ */
+export function zonedToIso(local: string, timeZone: string): string {
+  const [date, time = "00:00"] = local.split("T");
+  const [y, m, d] = date.split("-").map(Number);
+  const [h, min] = time.split(":").map(Number);
+  const guess = Date.UTC(y, m - 1, d, h, min);
+  const first = guess - zoneOffsetMs(guess, timeZone);
+  return new Date(guess - zoneOffsetMs(first, timeZone)).toISOString();
+}

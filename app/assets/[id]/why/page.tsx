@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AssetTabs } from "@/components/asset-tabs";
 import { notFound } from "next/navigation";
 import { WaterfallChart } from "@/components/charts";
 import { QuestionBox } from "@/components/question-box";
@@ -55,37 +56,32 @@ export default async function WhyPage({
   return (
     <div className="grid gap-4">
       <header>
-        <p className="text-[12px] text-muted-foreground">{asset.name}</p>
-        <h1 className="text-[20px] font-semibold">Why revenue changed</h1>
+        <p className="eyebrow">{asset.name}</p>
+        <h1 className="page-title">Why revenue changed</h1>
         <p className="text-muted-foreground">
           {from} to {to}, compared with {compare === "forecast" ? "the morning forecast" : "the previous window"}.
         </p>
       </header>
-      <nav className="flex flex-wrap gap-3 text-[13px]">
-        <Link href={linkTo(q, `/assets/${asset.id}`)}>Day</Link>
-        <Link className="font-medium text-primary" href={linkTo(q, `/assets/${asset.id}/why`)}>Why</Link>
-        <Link href={linkTo(q, `/assets/${asset.id}/control`)}>Control</Link>
-        <Link href={linkTo(q, `/assets/${asset.id}/log`)}>Log</Link>
-      </nav>
+      <AssetTabs assetId={asset.id} active="why" href={(path) => linkTo(q, path)} />
       <p className="text-[12px] text-muted-foreground">{to === "2026-11-19" ? "Data delayed — last telemetry 14:05" : "Settled"}</p>
       {asset.id === "tajo-sur" ? (
-        <section className="rounded-[6px] border border-border bg-card p-4">
-          <h2 className="text-[16px] font-semibold">No revenue to explain yet</h2>
+        <section className="card p-5">
+          <h2 className="section-title">No revenue to explain yet</h2>
           <p>Tajo Sur is not trading. The bridge starts once control is handed over.</p>
         </section>
       ) : (
         <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,1fr)]">
-          <article className="rounded-[6px] border border-border bg-card p-4">
-            <h2 className="mb-3 text-[16px] font-semibold">Revenue bridge</h2>
+          <article className="card p-5">
+            <h2 className="mb-3 section-title">Revenue bridge</h2>
             <WaterfallChart rows={waterfall} locale={q.locale} animated />
           </article>
-          <article className="rounded-[6px] border border-border bg-card p-4">
-            <h2 className="text-[16px] font-semibold">{explanation.headline}</h2>
+          <article className="card p-5">
+            <h2 className="section-title">{explanation.headline}</h2>
             <ul className="mt-3 grid gap-2">
               {explanation.sentences.map((sentence) => (
                 <li key={sentence.text}>
                   {sentence.text}{" "}
-                  <Link className="text-primary" href={linkTo(q, `/assets/${sentence.evidence.assetId === "portfolio" ? asset.id : sentence.evidence.assetId}`, { date: sentence.evidence.from })}>
+                  <Link className="link" href={linkTo(q, `/assets/${sentence.evidence.assetId === "portfolio" ? asset.id : sentence.evidence.assetId}`, { date: sentence.evidence.from })}>
                     Show on the timeline
                   </Link>
                 </li>
@@ -116,13 +112,13 @@ export default async function WhyPage({
           </article>
         </div>
       )}
-      <section className="rounded-[6px] border border-border bg-card p-4">
-        <h2 className="text-[16px] font-semibold">Ask a supported question</h2>
+      <section className="card p-5">
+        <h2 className="section-title">Ask a supported question</h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {SUGGESTED.map((item) => (
             <Link
               key={item.title}
-              className="rounded-[4px] border border-border px-2 py-1"
+              className="inline-flex h-8 items-center rounded-full border border-border-strong bg-surface px-3 hover:border-primary hover:text-primary"
               href={linkTo(q, `/assets/${asset.id}/why`, { from: item.from, to: item.to, compare: item.compare, focus: item.focus, q: null })}
             >
               {item.title}

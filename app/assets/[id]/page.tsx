@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { AssetTabs } from "@/components/asset-tabs";
 import { notFound } from "next/navigation";
 import { RevenueHeatmap, WaterfallChart } from "@/components/charts";
 import { DayExplorer } from "@/components/day-explorer";
@@ -7,7 +8,7 @@ import { StateChip, toneForPlan, toneForPosition } from "@/components/state-chip
 import { marketPosition } from "@/lib/explain";
 import { explainWindow } from "@/lib/selectors";
 import { formatEUR, formatSignedEUR } from "@/lib/format";
-import { PLAN_LABEL, POSITION_LABEL } from "@/lib/labels";
+import { PLAN_LABEL, POSITION_LABEL, MARKET_LABEL } from "@/lib/labels";
 import { findAsset, linkTo, loadView, resolvedDate } from "@/lib/page-model";
 import { addDays, DEMO_TODAY, formatDay, FORECAST_END, offsetHours, slotIso, WINDOW_START } from "@/lib/time";
 
@@ -62,33 +63,27 @@ export default async function AssetDayPage({
           <p className="text-[12px] text-muted-foreground">
             {asset.country} · {asset.powerKw / 1000} MW / {asset.energyKwh / 1000} MWh · Europe/Berlin display follows the asset zone
           </p>
-          <h1 className="text-[20px] font-semibold">{asset.name}</h1>
+          <h1 className="page-title">{asset.name}</h1>
           <p className="text-[13px]">{formatDay(date)}{date > DEMO_TODAY ? " · forecast" : ""}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link className="rounded-[4px] border border-border px-2 py-1" href={linkTo(q, `/assets/${asset.id}`, { date: addDays(date, -1) < WINDOW_START ? WINDOW_START : addDays(date, -1) })} aria-label="Previous day">
+          <Link className="inline-flex h-8 items-center rounded-[6px] border border-border-strong bg-surface px-3 font-medium shadow-[0_1px_2px_rgb(16_24_40/0.04)] hover:bg-muted" href={linkTo(q, `/assets/${asset.id}`, { date: addDays(date, -1) < WINDOW_START ? WINDOW_START : addDays(date, -1) })} aria-label="Previous day">
             Previous
           </Link>
-          <Link className="rounded-[4px] border border-border px-2 py-1" href={linkTo(q, `/assets/${asset.id}`, { date: addDays(date, 1) > FORECAST_END ? FORECAST_END : addDays(date, 1) })} aria-label="Next day">
+          <Link className="inline-flex h-8 items-center rounded-[6px] border border-border-strong bg-surface px-3 font-medium shadow-[0_1px_2px_rgb(16_24_40/0.04)] hover:bg-muted" href={linkTo(q, `/assets/${asset.id}`, { date: addDays(date, 1) > FORECAST_END ? FORECAST_END : addDays(date, 1) })} aria-label="Next day">
             Next
           </Link>
         </div>
       </header>
-      <nav className="flex flex-wrap gap-3 text-[13px]" aria-label="Asset">
-        <Link className="font-medium text-primary" href={sub(`/assets/${asset.id}`)}>Day</Link>
-        <Link href={sub(`/assets/${asset.id}/why`)}>Why</Link>
-        <Link href={sub(`/assets/${asset.id}/control`)}>Control</Link>
-        <Link href={sub(`/assets/${asset.id}/log`)}>Log</Link>
-        <Link href={sub(`/assets/${asset.id}/journey`)}>Journey</Link>
-      </nav>
+      <AssetTabs assetId={asset.id} active="day" href={sub} />
       <p className="text-[12px] text-muted-foreground">
         {date === DEMO_TODAY ? "Data delayed — last telemetry 14:05" : date > DEMO_TODAY ? "Forecast only" : intervals.some((row) => row.quality === "missing") ? "Telemetry gap — some intervals are missing" : "Settled"}
       </p>
       {!daily?.trading && (
-        <section className="rounded-[6px] border border-border bg-card p-4">
-          <h2 className="text-[16px] font-semibold">Trading has not started</h2>
+        <section className="card p-5">
+          <h2 className="section-title">Trading has not started</h2>
           <p className="mt-1">Prequalification is blocked, waiting on the DSO. There is no dispatch to explain yet.</p>
-          <Link className="mt-2 inline-block text-primary" href={sub(`/assets/${asset.id}/journey`)}>Open the go-live journey</Link>
+          <Link className="mt-2 inline-block link" href={sub(`/assets/${asset.id}/journey`)}>Open the go-live journey</Link>
         </section>
       )}
       <RevenueHeatmap cells={heatmap} selected={date} />
@@ -101,8 +96,8 @@ export default async function AssetDayPage({
         </section>
       )}
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]">
-        <article className="rounded-[6px] border border-border bg-card p-4 shadow-[var(--shadow-sheet)]">
-          <h2 className="mb-2 text-[16px] font-semibold">Dispatch</h2>
+        <article className="card p-5">
+          <h2 className="section-title mb-3">Dispatch</h2>
           <DayExplorer
             intervals={intervals}
             prices={prices}
@@ -114,8 +109,8 @@ export default async function AssetDayPage({
           />
         </article>
         <aside className="grid gap-3">
-          <article className="rounded-[6px] border border-border bg-card p-4">
-            <h2 className="text-[16px] font-semibold">Day story</h2>
+          <article className="card p-5">
+            <h2 className="section-title">Day story</h2>
             {explanation ? (
               <>
                 <p className="mt-2 font-medium">{explanation.headline}</p>
@@ -124,7 +119,7 @@ export default async function AssetDayPage({
                     <li key={sentence.text}>{sentence.text}</li>
                   ))}
                 </ul>
-                <Link className="mt-3 inline-block text-[12px] text-primary" href={linkTo(q, `/assets/${asset.id}/why`, { from: date, to: date, compare: "forecast" })}>
+                <Link className="mt-3 inline-block text-[12px] link" href={linkTo(q, `/assets/${asset.id}/why`, { from: date, to: date, compare: "forecast" })}>
                   Open the full bridge
                 </Link>
               </>
@@ -133,14 +128,14 @@ export default async function AssetDayPage({
             )}
           </article>
           {daily?.trading && (
-            <article className="rounded-[6px] border border-border bg-card p-4">
-              <h2 className="mb-2 text-[16px] font-semibold">Where the euros came from</h2>
+            <article className="card p-5">
+              <h2 className="section-title mb-3">Where the euros came from</h2>
               <WaterfallChart
                 locale={q.locale}
                 rows={[
                   ...(["DA", "ID", "AFRR_CAP", "AFRR_ENERGY", "FCR", "IMBALANCE"] as const)
                     .filter((market) => daily.byMarketCents[market] !== 0)
-                    .map((market) => ({ label: market, cents: daily.byMarketCents[market] })),
+                    .map((market) => ({ label: MARKET_LABEL[market], cents: daily.byMarketCents[market] })),
                   { label: "Total", cents: daily.totalCents, total: true },
                 ]}
               />
@@ -155,10 +150,10 @@ export default async function AssetDayPage({
 
 function Mini({ label, value, extra }: { label: string; value: string; extra?: ReactNode }) {
   return (
-    <article className="rounded-[6px] border border-border bg-card px-4 py-3">
-      <h2 className="text-[11px] font-semibold text-muted-foreground">{label}</h2>
-      <p className="num text-[20px] font-medium leading-[1.2]">{value}</p>
-      {extra}
+    <article className="card grid content-start gap-1.5 px-4 py-3.5">
+      <h2 className="label">{label}</h2>
+      <p className="num text-[22px] font-medium leading-[26px] tracking-[-0.02em]">{value}</p>
+      {extra && <div>{extra}</div>}
     </article>
   );
 }

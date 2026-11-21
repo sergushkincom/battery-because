@@ -73,7 +73,11 @@ Dense B2B console. Not a marketing page.
 
 - Type: IBM Plex Sans for the interface, IBM Plex Mono for money, power, and time. Tabular figures. Body 13px.
 - Colour: navy for actions, amber for attention. Charge is blue (cyan), discharge is amber. Price up and price down are labelled as well as coloured. No mint.
-- Radius 6px on cards, 4px on controls. Opaque surfaces, 1px borders. No blur, no glass, no gradient on the chrome.
+- Radius 8px on cards, 6px on controls, full round on status chips. Opaque surfaces, 1px borders and a very light card shadow. No blur, no glass, no gradient on the chrome.
+- Type scale: page title 22/28 semibold, section title 15/22 semibold, labels 12 medium muted, body 13. KPI figures 26px mono.
+- Controls: one height (32px), one border, a quiet hover and a 3px ring on keyboard focus. The period switch is a segmented control; selects use one chevron.
+- Status chips carry a coloured dot and a word. Every text and background pair holds WCAG AA in both themes.
+- Motion: 120–220ms ease-out for hover, focus, tabs and new panels; nothing loops except the "needs a decision" pulse, and reduced motion turns it all off.
 - No Geist.
 - Light theme for owners. Dark theme for operators. Both are complete.
 - References, restyled onto these tokens: shadcn/ui (component primitives), ReUI (data grid, filters, timeline, trace), Twenty (density and the app shell), affectUI (named states and approve / reject).
@@ -105,6 +109,7 @@ Done:
 - Portfolio, asset day, why-bridge, autonomy and approvals, maintenance window, audit log, reports (PDF and CSV), operator queue, go-live stepper, markets.
 - The Why bridge builds one bar at a time from the left, with a thin connector drawing in between neighbours. Hover or keyboard focus on a bar or its driver row highlights the pair. Reduced motion shows the finished chart at once.
 - Light and dark themes, EN/DE number formats, keyboard skip link, empty and error states, stale-data state ("Data delayed — last telemetry 14:05").
+- UI pass (Nov 2026): app shell with icons and a mobile menu; a header that stays on one line from phone to desktop; the same five tabs on every asset page; a calendar with weekdays and months; any quarter-hour on the dispatch chart can be picked; tables scroll inside their card on a phone.
 - Seeded book, explainer, and tests that the explanation numbers match the computed data.
 - README, screenshots, and a short GIF of the timeline and the "why revenue changed" flow.
 - CI, MIT license (Denys Sergushkin / sergushkincom).
@@ -113,7 +118,7 @@ The live URL in the README (`https://battery-because.vercel.app`) is a placehold
 
 ## Known gaps / next ideas
 
-- Maintenance start and end use `datetime-local`, so the clock follows the browser locale. A US browser shows 12-hour AM/PM instead of 24-hour Europe/Berlin.
+- Maintenance start and end use `datetime-local`, so the clock follows the browser locale. A US browser shows 12-hour AM/PM instead of 24-hour Europe/Berlin. The values are read as wall time in the asset's zone.
 - Data grid, filters, timeline, and approval trace follow the ReUI and affectUI patterns but are built on these tokens. The free registry blocks were not imported, so the console would not pick up a second theme.
 - Questions are a fixed set of intents. An LLM can sit behind `explain()` later; it is not wired up.
 - No real market data, no multi-user auth, no email alerts.

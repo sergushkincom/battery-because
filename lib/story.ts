@@ -1,3 +1,4 @@
+import { MARKET_LABEL } from "./labels";
 import { formatEUR, type Locale } from "./format";
 import { formatClock } from "./time";
 import type { DispatchInterval, WeatherDriver } from "./types";
@@ -24,7 +25,8 @@ export function slotStory(
   const mw = Math.abs(interval.powerKw) / 1000;
   const price = interval.priceEurMwh.toFixed(0);
   const earned = formatEUR(interval.revenueCents, locale, 0);
-  const market = interval.market === "ID" ? "intraday" : interval.market === "DA" ? "day-ahead" : interval.market;
+  // Plain words, never the internal market code.
+  const market = interval.market === "ID" ? "intraday" : interval.market === "DA" ? "day-ahead" : MARKET_LABEL[interval.market];
   const verb = interval.powerKw > 0 ? "Discharged" : "Charged";
   let text = `${time} — ${verb} ${mw.toFixed(1)} MW on ${market} at €${price}/MWh.`;
   if (interval.market === "ID" && interval.daEurMwh != null) {

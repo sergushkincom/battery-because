@@ -12,7 +12,7 @@ export default async function AssetsPage({
   return (
     <div className="grid gap-4">
       <header>
-        <h1 className="text-[20px] font-semibold">Assets</h1>
+        <h1 className="page-title">Assets</h1>
         <p className="text-muted-foreground">Same book, filtered to the portfolio in the header. Totals sit in the footer.</p>
       </header>
       <p className="text-[12px] text-muted-foreground">{view.window.to === DEMO_TODAY ? "Data delayed — last telemetry 14:05" : "Settled"}</p>

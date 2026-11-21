@@ -18,7 +18,9 @@ export function ApprovalActions({ item, role }: { item: ApprovalRequest; role: R
   const overlay = demo.overlay.approvals[item.id] as
     | { state: "approved" | "rejected"; resolvedBy: string; note?: string }
     | undefined;
-  if (overlay || item.state !== "pending") {
+  // An expired request already says so in its chip; repeating it here was noise.
+  if (!overlay && item.state !== "pending") return null;
+  if (overlay) {
     const state = overlay?.state ?? item.state;
     return (
       <p className="text-[12px] text-muted-foreground">
@@ -55,7 +57,7 @@ export function ApprovalActions({ item, role }: { item: ApprovalRequest; role: R
           <label className="sr-only" htmlFor={`why-${item.id}`}>
             Why reject
           </label>
-          <input id={`why-${item.id}`} value={note} onChange={(e) => setNote(e.target.value)} required className="h-8 flex-1 rounded-[4px] border border-border bg-surface px-2" placeholder="Why this is rejected" />
+          <input id={`why-${item.id}`} value={note} onChange={(e) => setNote(e.target.value)} required className="field flex-1" placeholder="Why this is rejected" />
           <Button type="submit" variant="destructive" size="sm">
             Confirm reject
           </Button>

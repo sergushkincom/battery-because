@@ -7,6 +7,7 @@ import {
   ComposedChart,
   Legend,
   Line,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -36,11 +37,11 @@ export function ShowData({
   const [open, setOpen] = useState(false);
   return (
     <div className="mt-2">
-      <button className="text-[12px] text-primary" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+      <button className="link text-[12px]" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         {open ? "Hide data" : "Show data"}
       </button>
       {open && (
-        <div className="mt-2 max-h-64 overflow-auto rounded-[6px] border border-border">
+        <div className="table-wrap mt-2 max-h-64 overflow-auto">
           <table className="table-grid">
             <thead>
               <tr>
@@ -84,15 +85,28 @@ export interface TimelinePoint {
 export function DispatchTimeline({
   points,
   onSelect,
+  selected,
 }: {
   points: TimelinePoint[];
   onSelect: (ts: string) => void;
+  selected?: string | null;
 }) {
+  const selectedLabel = points.find((p) => p.ts === selected)?.label;
   return (
     <div>
-      <div className="h-[300px] w-full min-w-0" role="img" aria-label="Dispatch timeline for the selected day">
+      <div className="h-[300px] w-full min-w-0 cursor-crosshair" role="img" aria-label="Dispatch timeline for the selected day">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <ComposedChart
+            data={points}
+            margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+            // Any quarter-hour can be picked, not only the thin charge and discharge bars.
+            onClick={(state) => {
+              const byLabel = points.find((p) => p.label === state?.activeLabel);
+              const index = state?.activeTooltipIndex == null ? NaN : Number(state.activeTooltipIndex);
+              const point = byLabel ?? (Number.isInteger(index) ? points[index] : undefined);
+              if (point) onSelect(point.ts);
+            }}
+          >
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} interval={7} />
             <YAxis yAxisId="eur" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} width={42} unit="" />
@@ -103,7 +117,7 @@ export function DispatchTimeline({
                 if (!active || !payload?.[0]) return null;
                 const row = payload[0].payload as TimelinePoint;
                 return (
-                  <div className="max-w-xs rounded-[4px] border border-border bg-card px-2 py-1.5 text-[12px] shadow-[var(--shadow-sheet)]">
+                  <div className="max-w-xs rounded-[6px] border border-border bg-card px-3 py-2 text-[12px] shadow-[var(--shadow-pop)]">
                     {row.story}
                   </div>
                 );
@@ -135,6 +149,7 @@ export function DispatchTimeline({
             <Line yAxisId="eur" type="monotone" dataKey="da" name="Day-ahead €/MWh" stroke="var(--series-da)" strokeWidth={1.75} dot={false} />
             <Line yAxisId="eur" type="monotone" dataKey="id" name="Intraday €/MWh" stroke="var(--series-id)" strokeWidth={1.5} dot={false} connectNulls />
             <Line yAxisId="soc" type="monotone" dataKey="soc" name="SoC %" stroke="var(--series-soc)" strokeWidth={1.5} dot={false} />
+            {selectedLabel && <ReferenceLine yAxisId="mw" x={selectedLabel} stroke="var(--primary)" strokeWidth={2} strokeDasharray="3 3" ifOverflow="extendDomain" />}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -158,7 +173,7 @@ export function PriceChart({ rows }: { rows: { label: string; da: number; id: nu
             content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
               return (
-                <div className="rounded-[4px] border border-border bg-card px-2 py-1 text-[12px]">
+                <div className="rounded-[6px] border border-border bg-card px-3 py-2 text-[12px] shadow-[var(--shadow-pop)]">
                   <p>{label}</p>
                   {payload.map((item) => (
                     <p key={String(item.name)} className="num">
@@ -190,12 +205,12 @@ export function StackedMarkets({
           <ComposedChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke="var(--border)" vertical={false} />
             <XAxis dataKey="label" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
-            <YAxis tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} width={48} />
+            <YAxis tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} width={48} tickFormatter={compactEuro} axisLine={false} tickLine={false} />
             <Tooltip
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null;
                 return (
-                  <div className="rounded-[4px] border border-border bg-card px-2 py-1 text-[12px]">
+                  <div className="rounded-[6px] border border-border bg-card px-3 py-2 text-[12px] shadow-[var(--shadow-pop)]">
                     <p className="font-medium">{label}</p>
                     {payload.map((item) => (
                       <p key={String(item.name)} className="num">
@@ -222,6 +237,13 @@ export function StackedMarkets({
       />
     </div>
   );
+}
+
+/** 19500 → "€19.5k", so the axis reads at a glance. */
+function compactEuro(value: number): string {
+  const abs = Math.abs(value);
+  const text = abs >= 1000 ? `${(abs / 1000).toFixed(abs % 1000 === 0 ? 0 : 1)}k` : String(Math.round(abs));
+  return `${value < 0 ? "−" : ""}€${text}`;
 }
 
 const BRIDGE_W = 640;
@@ -370,39 +392,54 @@ export function RevenueHeatmap({
   selected: string;
 }) {
   return (
-    <div>
-      <div className="mb-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground">
-        {["Quiet", "Soft", "Solid", "Strong"].map((name) => (
-          <span key={name} className="inline-flex items-center gap-1">
-            <span className={cn("inline-block h-2.5 w-2.5 rounded-[2px]", bucketClass(name))} />
-            {name}
-          </span>
-        ))}
+    <div className="card p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="label">Revenue per day · pick a day</p>
+        <div className="flex flex-wrap gap-3 text-[12px] text-muted-foreground">
+          {["Quiet", "Soft", "Solid", "Strong"].map((name) => (
+            <span key={name} className="inline-flex items-center gap-1.5">
+              <span className={cn("inline-block size-2.5 rounded-[3px]", bucketClass(name))} />
+              {name}
+            </span>
+          ))}
+        </div>
       </div>
       <div className="grid grid-cols-7 gap-1">
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+          <span key={day} className="pb-1 text-center text-[11px] font-medium text-muted-foreground" aria-hidden="true">
+            {day}
+          </span>
+        ))}
         {Array.from({ length: cells.length ? (weekdayIndex(cells[0].date) + 6) % 7 : 0 }, (_, index) => (
           <span key={`pad-${index}`} />
         ))}
-        {cells.map((cell) => (
-          <a
-            key={cell.date}
-            href={cell.href}
-            aria-label={`${cell.label}, ${cell.bucket}, ${formatEUR(cell.cents)}`}
-            aria-current={cell.date === selected ? "date" : undefined}
-            className={cn(
-              "flex h-8 items-center justify-center rounded-[2px] border text-[10px]",
-              bucketClass(cell.bucket),
-              cell.date === selected ? "border-primary" : "border-transparent",
-            )}
-          >
-            <span className="sr-only">{cell.bucket}</span>
-            {cell.date.slice(8)}
-          </a>
-        ))}
+        {cells.map((cell) => {
+          const first = cell.date.endsWith("-01") || cell === cells[0];
+          const on = cell.date === selected;
+          return (
+            <a
+              key={cell.date}
+              href={cell.href}
+              aria-label={`${cell.label}, ${cell.bucket}, ${formatEUR(cell.cents)}`}
+              aria-current={on ? "date" : undefined}
+              className={cn(
+                "num flex h-8 items-center justify-center rounded-[4px] text-[11px] transition-[box-shadow,transform] duration-150 hover:ring-2 hover:ring-foreground/25",
+                bucketClass(cell.bucket),
+                on && "ring-2 ring-primary ring-offset-1 ring-offset-card hover:ring-primary",
+                first && "font-medium",
+              )}
+            >
+              <span className="sr-only">{cell.bucket}</span>
+              {first ? `${MONTH_SHORT[Number(cell.date.slice(5, 7)) - 1]} ${Number(cell.date.slice(8))}` : Number(cell.date.slice(8))}
+            </a>
+          );
+        })}
       </div>
     </div>
   );
 }
+
+const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function shortBridgeLabel(label: string): string {
   const known: Record<string, string> = {
@@ -413,12 +450,14 @@ function shortBridgeLabel(label: string): string {
     "Cycle limit": "Cycles",
     "Fees and imbalance": "Fees",
     Availability: "Availability",
+    "aFRR capacity": "aFRR cap.",
+    "aFRR energy": "aFRR en.",
   };
   return known[label] ?? label;
 }
 
 function bucketClass(bucket: string): string {
-  if (bucket === "Strong") return "bg-up/80 text-white";
+  if (bucket === "Strong") return "bg-up text-white dark:bg-up/75 dark:text-[#06180d]";
   if (bucket === "Solid") return "bg-up/45 text-foreground";
   if (bucket === "Soft") return "bg-up/20 text-foreground";
   return "bg-muted text-muted-foreground";

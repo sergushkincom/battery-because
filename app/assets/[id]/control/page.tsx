@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AssetTabs } from "@/components/asset-tabs";
 import { notFound } from "next/navigation";
 import { ControlDesk } from "@/components/control-desk";
 import { findAsset, linkTo, loadView } from "@/lib/page-model";
@@ -27,15 +28,9 @@ export default async function ControlPage({
     <div className="grid gap-4">
       <header>
         <p className="text-[12px] text-muted-foreground">{asset.name}</p>
-        <h1 className="text-[20px] font-semibold">Autonomy and control</h1>
+        <h1 className="page-title">Autonomy and control</h1>
       </header>
-      <nav className="flex flex-wrap gap-3 text-[13px]">
-        <Link href={linkTo(q, `/assets/${asset.id}`)}>Day</Link>
-        <Link href={linkTo(q, `/assets/${asset.id}/why`)}>Why</Link>
-        <Link className="font-medium text-primary" href={linkTo(q, `/assets/${asset.id}/control`)}>Control</Link>
-        <Link href={linkTo(q, `/assets/${asset.id}/log`)}>Log</Link>
-        <Link href={linkTo(q, `/assets/${asset.id}/journey`)}>Journey</Link>
-      </nav>
+      <AssetTabs assetId={asset.id} active="control" href={(path) => linkTo(q, path)} />
       <p className="text-[12px] text-muted-foreground">Settled history, with forecast slots used only to price a maintenance window.</p>
       <ControlDesk asset={asset} rules={rules} approvals={approvals} slots={slots} role={q.role} locale={q.locale} timeZone={asset.timezone} />
     </div>
