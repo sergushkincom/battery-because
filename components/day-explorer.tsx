@@ -47,12 +47,20 @@ export function DayExplorer({
   return (
     <div className="grid gap-3">
       {forecast && <p className="text-[12px] text-needs">Forecast — this day has not settled. The chart is the morning expectation, not a result.</p>}
-      <DispatchTimeline points={points} onSelect={setSelected} />
+      <DispatchTimeline points={points} onSelect={setSelected} selected={selected} />
+      {!selected && <p className="text-[12px] text-muted-foreground">Click anywhere on the chart to see what the battery did in that quarter-hour, and why.</p>}
       <Lane intervals={intervals} weather={weather} timeZone={timeZone} />
+      {selected && !decision && (
+        <aside className="appear rounded-[8px] border border-border bg-muted/50 px-4 py-3" aria-live="polite">
+          <p className="label">{points.find((p) => p.ts === selected)?.label}</p>
+          <p className="mt-1">{points.find((p) => p.ts === selected)?.story}</p>
+          <p className="mt-1 text-[12px] text-muted-foreground">No trade decision was logged in this quarter-hour.</p>
+        </aside>
+      )}
       {decision && (
-        <aside className="rounded-[6px] border border-border bg-card p-4" aria-live="polite">
-          <p className="text-[11px] font-semibold tracking-[0.02em] text-muted-foreground">Trade decision</p>
-          <h3 className="text-[14px] font-semibold">{decision.action === "hold" ? "Held" : decision.action === "charge" ? "Charged" : "Discharged"}</h3>
+        <aside className="card appear p-5" aria-live="polite">
+          <p className="label">Trade decision</p>
+          <h3 className="item-title">{decision.action === "hold" ? "Held" : decision.action === "charge" ? "Charged" : "Discharged"}</h3>
           <p className="mt-1">{decision.reason}</p>
           {decision.alternative && (
             <p className="mt-2 text-[12px] text-muted-foreground">
@@ -60,7 +68,7 @@ export function DayExplorer({
             </p>
           )}
           <p className="num mt-2 text-[12px]">Result {formatEUR(decision.revenueCents, locale, 0)}</p>
-          <a className="mt-2 inline-block text-[12px] text-primary" href={`log?focus=${decision.id}`}>
+          <a className="mt-2 inline-block text-[12px] link" href={`/assets/${decision.assetId}/log?focus=${decision.id}`}>
             Open in the audit log
           </a>
         </aside>

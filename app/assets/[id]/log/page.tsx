@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { LogMerge } from "@/components/log-merge";
-import { findAsset, loadView } from "@/lib/page-model";
+import { AssetTabs } from "@/components/asset-tabs";
+import { findAsset, linkTo, loadView } from "@/lib/page-model";
 
 export default async function AssetLogPage({
   params,
@@ -21,6 +22,7 @@ export default async function AssetLogPage({
       title={`${asset.name} audit log`}
       intro="What the system did, what a person changed, and why."
       assetId={asset.id}
+      nav={<AssetTabs assetId={asset.id} active="log" href={(path) => linkTo(q, path)} />}
     />
   );
 }

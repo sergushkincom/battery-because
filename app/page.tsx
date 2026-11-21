@@ -47,11 +47,11 @@ export default async function PortfolioPage({
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-[12px] text-muted-foreground">{portfolio.ownerName}</p>
-          <h1 className="text-[20px] font-semibold">{portfolio.name}</h1>
+          <p className="eyebrow">{portfolio.ownerName}</p>
+          <h1 className="page-title">{portfolio.name}</h1>
           <p className="text-[13px] text-muted-foreground">
             {view.window.label} · {view.window.from} to {view.window.to}
           </p>
@@ -89,13 +89,13 @@ export default async function PortfolioPage({
         />
       </section>
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
-        <article className="rounded-[6px] border border-border bg-card p-4 shadow-[var(--shadow-sheet)]">
-          <h2 className="text-[16px] font-semibold">Revenue by market</h2>
+        <article className="card p-5">
+          <h2 className="section-title">Revenue by market</h2>
           <p className="mb-3 text-[12px] text-muted-foreground">Euros per day. Imbalance can sit below zero.</p>
           <StackedMarkets rows={series} />
         </article>
-        <article className="rounded-[6px] border border-border bg-card p-4 shadow-[var(--shadow-sheet)]">
-          <h2 className="text-[16px] font-semibold">By country</h2>
+        <article className="card p-5">
+          <h2 className="section-title">By country</h2>
           <ul className="mt-3 divide-y divide-border">
             {[...countries.entries()].map(([country, item]) => (
               <li key={country} className="flex items-baseline justify-between gap-3 py-2">
@@ -109,14 +109,14 @@ export default async function PortfolioPage({
           </ul>
           <p className="mt-3 text-[12px] text-muted-foreground">
             Tajo Sur is not in the totals.{" "}
-            <Link className="text-primary" href={linkTo(q, "/assets/tajo-sur/journey")}>
+            <Link className="link" href={linkTo(q, "/assets/tajo-sur/journey")}>
               See where it is in go-live.
             </Link>
           </p>
         </article>
       </section>
       <section>
-        <h2 className="mb-2 text-[16px] font-semibold">Assets</h2>
+        <h2 className="section-title mb-3">Assets</h2>
         <AssetTable
           locale={q.locale}
           rows={view.rows.map((row) => ({
@@ -188,18 +188,19 @@ function Kpi({
 }) {
   const metaClass = tone === "up" ? "text-up" : tone === "down" ? "text-down" : tone === "attention" ? "text-needs" : "text-muted-foreground";
   return (
-    <article className="rounded-[6px] border border-border bg-card px-4 py-3 shadow-[var(--shadow-sheet)]">
-      <h2 className="text-[11px] font-semibold tracking-[0.02em] text-muted-foreground">{label}</h2>
-      <p className="num mt-1 text-[24px] font-medium leading-[1.2]">{value}</p>
-      <p className={`num text-[12px] ${metaClass}`}>{meta}</p>
-      <p className="mt-2 line-clamp-3 text-[12px] text-muted-foreground">{reason}</p>
+    <article className="card flex flex-col px-4 py-4">
+      <h2 className="label">{label}</h2>
+      <p className="num mt-2 text-[26px] font-medium leading-[30px] tracking-[-0.02em]">{value}</p>
+      <p className={`num mt-1 text-[12px] font-medium ${metaClass}`}>{meta}</p>
+      <p className="mt-3 line-clamp-3 border-t border-border pt-3 text-[12px] leading-[18px] text-muted-foreground">{reason}</p>
     </article>
   );
 }
 
 function DataLine({ today }: { today: boolean }) {
   return (
-    <p className="text-[12px] text-muted-foreground">
+    <p className={`inline-flex items-center gap-1.5 text-[12px] ${today ? "text-needs" : "text-muted-foreground"}`}>
+      <span className={`size-1.5 rounded-full ${today ? "bg-accent" : "bg-up"}`} aria-hidden="true" />
       {today ? "Data delayed — last telemetry 14:05" : "Settled"}
     </p>
   );

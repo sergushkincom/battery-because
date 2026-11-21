@@ -1,17 +1,18 @@
 import { cn } from "@/lib/utils";
 
+// Each tone: a tinted fill, a matching dot and AA text. The dot carries the colour, the word carries the meaning.
 const TONE = {
-  plan: "bg-muted text-foreground",
-  above: "bg-[color:var(--price-up)]/12 text-up",
-  below: "bg-[color:var(--price-down)]/10 text-down",
-  market: "bg-muted text-foreground",
-  system: "bg-[color:var(--system)]/10 text-system",
-  needs: "bg-[color:var(--needs-human)]/12 text-needs",
-  approved: "bg-muted text-approved",
-  rejected: "bg-[color:var(--rejected)]/10 text-rejected",
-  idle: "bg-muted text-idle",
-  charge: "bg-[color:var(--charge)]/12 text-charge",
-  discharge: "bg-[color:var(--discharge)]/14 text-discharge",
+  plan: "bg-muted text-foreground before:bg-idle",
+  above: "bg-[color:var(--price-up)]/10 text-up before:bg-up",
+  below: "bg-[color:var(--price-down)]/10 text-down before:bg-down",
+  market: "bg-muted text-foreground before:bg-idle",
+  system: "bg-[color:var(--system)]/10 text-system before:bg-system",
+  needs: "bg-accent-soft text-needs before:bg-accent",
+  approved: "bg-muted text-approved before:bg-approved",
+  rejected: "bg-[color:var(--rejected)]/10 text-rejected before:bg-rejected",
+  idle: "bg-muted text-idle before:bg-idle",
+  charge: "bg-[color:var(--charge)]/10 text-charge before:bg-charge",
+  discharge: "bg-[color:var(--discharge)]/12 text-discharge before:bg-discharge",
 } as const;
 
 export function StateChip({
@@ -26,7 +27,7 @@ export function StateChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 text-[11px] font-semibold tracking-[0.02em]",
+        "inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-full pl-2 pr-2.5 text-[12px] font-medium leading-none before:size-1.5 before:shrink-0 before:rounded-full before:content-['']",
         TONE[tone],
         className,
       )}

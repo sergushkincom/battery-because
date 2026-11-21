@@ -16,6 +16,7 @@ export function LogMerge({
   title,
   intro,
   assetId,
+  nav,
 }: {
   seed: AuditEntry[];
   assets: { id: string; name: string; timezone: string }[];
@@ -24,6 +25,7 @@ export function LogMerge({
   intro: string;
   assetId?: string;
   query?: unknown;
+  nav?: React.ReactNode;
 }) {
   const demo = useDemo();
   const [actor, setActor] = useState("all");
@@ -42,7 +44,7 @@ export function LogMerge({
     <div className="grid gap-4">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-[20px] font-semibold">{title}</h1>
+          <h1 className="page-title">{title}</h1>
           <p className="text-muted-foreground">{intro}</p>
         </div>
         <DownloadCsv
@@ -60,10 +62,11 @@ export function LogMerge({
           }))}
         />
       </header>
+      {nav}
       <div className="flex flex-wrap gap-2">
         <label className="text-[12px]">
           Actor
-          <select className="ml-1 h-8 rounded-[4px] border border-border bg-surface px-2" value={actor} onChange={(e) => setActor(e.target.value)}>
+          <select className="field ml-1.5" value={actor} onChange={(e) => setActor(e.target.value)}>
             <option value="all">All</option>
             <option value="system">System</option>
             <option value="operator">Operator</option>
@@ -72,7 +75,7 @@ export function LogMerge({
         </label>
         <label className="text-[12px]">
           Type
-          <select className="ml-1 h-8 rounded-[4px] border border-border bg-surface px-2" value={type} onChange={(e) => setType(e.target.value)}>
+          <select className="field ml-1.5" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="all">All</option>
             {["bid", "dispatch", "override", "approval", "alert", "report", "rule_change"].map((item) => (
               <option key={item}>{item}</option>
@@ -80,12 +83,12 @@ export function LogMerge({
           </select>
         </label>
       </div>
-      {visible.length === 0 && <p className="rounded-[6px] border border-border bg-card p-4 text-muted-foreground">No entries match these filters.</p>}
+      {visible.length === 0 && <p className="card p-5 text-muted-foreground">No entries match these filters.</p>}
       <ol className="grid gap-2">
         {visible.map((row) => {
           const asset = names.get(row.assetId);
           return (
-            <li key={row.id} className="rounded-[6px] border border-border bg-card px-4 py-3">
+            <li key={row.id} className="card px-4 py-3.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-medium">{row.summary}</p>
                 <StateChip tone={toneForAudit(row.state)}>{AUDIT_STATE_LABEL[row.state]}</StateChip>
@@ -100,7 +103,7 @@ export function LogMerge({
         })}
       </ol>
       {limit < rows.length && (
-        <button className="justify-self-start text-primary" onClick={() => setLimit((value) => value + 40)}>
+        <button className="justify-self-start link" onClick={() => setLimit((value) => value + 40)}>
           Show more
         </button>
       )}

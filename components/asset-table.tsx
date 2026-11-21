@@ -56,7 +56,7 @@ export function AssetTable({ rows, locale }: { rows: AssetRow[]; locale: Locale 
       <div className="mb-2 flex flex-wrap gap-2">
         <label className="text-[12px] text-muted-foreground">
           Country
-          <select className="ml-1 h-7 rounded-[4px] border border-border bg-surface px-1" value={country} onChange={(e) => setCountry(e.target.value)}>
+          <select className="field field-sm ml-1.5" value={country} onChange={(e) => setCountry(e.target.value)}>
             <option value="all">All</option>
             {countries.map((item) => (
               <option key={item}>{item}</option>
@@ -65,7 +65,7 @@ export function AssetTable({ rows, locale }: { rows: AssetRow[]; locale: Locale 
         </label>
         <label className="text-[12px] text-muted-foreground">
           State
-          <select className="ml-1 h-7 rounded-[4px] border border-border bg-surface px-1" value={state} onChange={(e) => setState(e.target.value)}>
+          <select className="field field-sm ml-1.5" value={state} onChange={(e) => setState(e.target.value)}>
             <option value="all">All</option>
             {Object.entries(PLAN_LABEL).map(([value, label]) => (
               <option key={value} value={value}>
@@ -75,7 +75,7 @@ export function AssetTable({ rows, locale }: { rows: AssetRow[]; locale: Locale 
           </select>
         </label>
       </div>
-      <div className="overflow-auto rounded-[6px] border border-border">
+      <div className="table-wrap">
         <table className="table-grid">
           <thead>
             <tr>

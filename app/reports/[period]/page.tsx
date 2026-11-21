@@ -54,7 +54,7 @@ export default async function ReportPeriodPage({
     <div className="grid gap-4">
       <header>
         <p className="text-[12px] text-muted-foreground">{name}</p>
-        <h1 className="text-[20px] font-semibold">{period.label}</h1>
+        <h1 className="page-title">{period.label}</h1>
         <p>{audienceLead}</p>
       </header>
       <div className="flex flex-wrap gap-2">
@@ -64,8 +64,8 @@ export default async function ReportPeriodPage({
           </Link>
         ))}
       </div>
-      <article className="rounded-[6px] border border-border bg-card p-4">
-        <h2 className="text-[16px] font-semibold">{explanation.headline}</h2>
+      <article className="card p-5">
+        <h2 className="section-title">{explanation.headline}</h2>
         <ul className="mt-2 grid gap-2">
           {explanation.sentences.map((sentence) => (
             <li key={sentence.text}>{sentence.text}</li>
@@ -80,8 +80,8 @@ export default async function ReportPeriodPage({
           ))}
         </dl>
       </article>
-      <article className="rounded-[6px] border border-border bg-card p-4">
-        <h2 className="mb-2 text-[16px] font-semibold">Bridge versus the morning forecast</h2>
+      <article className="card p-5">
+        <h2 className="section-title mb-3">Bridge versus the morning forecast</h2>
         <WaterfallChart
           locale={q.locale}
           rows={[
@@ -91,8 +91,8 @@ export default async function ReportPeriodPage({
           ]}
         />
       </article>
-      <article className="rounded-[6px] border border-border bg-card p-4">
-        <h2 className="text-[16px] font-semibold">Availability and incidents</h2>
+      <article className="card p-5">
+        <h2 className="section-title">Availability and incidents</h2>
         {incidents.length === 0 && <p className="mt-2 text-muted-foreground">No outages in this period.</p>}
         <ul className="mt-2 grid gap-1">
           {incidents.map((incident) => (

@@ -29,19 +29,19 @@ export default async function OpsPage({
   return (
     <div className="grid gap-4">
       <header>
-        <h1 className="text-[20px] font-semibold">Attention</h1>
+        <h1 className="page-title">Attention</h1>
         <p className="text-muted-foreground">What needs a person now, then what the system already did.</p>
       </header>
       <p className="text-[12px] text-needs">Data delayed — last telemetry 14:05</p>
       <section className="grid gap-3">
-        <h2 className="text-[16px] font-semibold">Approvals due</h2>
+        <h2 className="section-title">Approvals due</h2>
         {approvals.length === 0 && <p className="text-muted-foreground">No approvals are open.</p>}
         {approvals.map((item) => {
           const asset = ds.assets.find((candidate) => candidate.id === item.assetId)!;
           return (
-            <article key={item.id} className="rounded-[6px] border border-border bg-card p-4">
+            <article key={item.id} className="card p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-[14px] font-semibold">
+                <h3 className="item-title">
                   {asset.name} · {item.action}
                 </h3>
                 <StateChip tone={item.state === "expired" ? "needs" : "needs"}>{item.state === "expired" ? "Expired — system used safe default" : "Needs a decision"}</StateChip>
@@ -56,14 +56,14 @@ export default async function OpsPage({
         })}
       </section>
       <section className="grid gap-3">
-        <h2 className="text-[16px] font-semibold">Alerts</h2>
+        <h2 className="section-title">Alerts</h2>
         {gaps.map((gap) => {
           const asset = ds.assets.find((candidate) => candidate.id === gap.assetId)!;
           return (
-            <article key={gap.start} className="rounded-[6px] border border-border bg-card p-4">
-              <h3 className="text-[14px] font-semibold">{asset.name}</h3>
+            <article key={gap.start} className="card p-5">
+              <h3 className="item-title">{asset.name}</h3>
               <p>{gap.reason === "telemetry_loss" ? "Telemetry gap — intervals are missing, not zero." : "Inverter fault — the megawatts are offline."}</p>
-              <Link className="text-primary" href={linkTo(q, `/assets/${asset.id}`, { date: gap.start.slice(0, 10) })}>
+              <Link className="link" href={linkTo(q, `/assets/${asset.id}`, { date: gap.start.slice(0, 10) })}>
                 Open the day
               </Link>
             </article>
@@ -71,15 +71,15 @@ export default async function OpsPage({
         })}
       </section>
       <section className="grid gap-3">
-        <h2 className="text-[16px] font-semibold">Under plan yesterday</h2>
+        <h2 className="section-title">Under plan yesterday</h2>
         {under.length === 0 && <p className="text-muted-foreground">Every live asset finished on plan or above.</p>}
         {under.map((row) => (
-          <article key={row.asset.id} className="rounded-[6px] border border-border bg-card p-4">
-            <h3 className="text-[14px] font-semibold">{row.asset.name}</h3>
+          <article key={row.asset.id} className="card p-5">
+            <h3 className="item-title">{row.asset.name}</h3>
             <p>
               {row.state === "below_availability" ? "Below plan – availability." : "Below plan – market."} {formatEUR(row.metrics.totalCents, q.locale, 0)} against a plan of {formatEUR(row.metrics.planCents, q.locale, 0)}.
             </p>
-            <Link className="text-primary" href={linkTo(q, `/assets/${row.asset.id}/why`, { from, to: from, compare: "forecast" })}>
+            <Link className="link" href={linkTo(q, `/assets/${row.asset.id}/why`, { from, to: from, compare: "forecast" })}>
               Why
             </Link>
           </article>

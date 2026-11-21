@@ -26,7 +26,7 @@ export default async function MarketsPage({
   return (
     <div className="grid gap-4">
       <header>
-        <h1 className="text-[20px] font-semibold">Markets</h1>
+        <h1 className="page-title">Markets</h1>
         <p className="text-muted-foreground">Day-ahead and intraday for one country, on the 15-minute clock. Prices are synthetic.</p>
       </header>
       <div className="flex flex-wrap gap-2">
@@ -37,13 +37,13 @@ export default async function MarketsPage({
         ))}
       </div>
       <p className="text-[12px] text-muted-foreground">{date === "2026-11-19" ? "Data delayed — last telemetry 14:05" : "Settled prices for this demo day."}</p>
-      <article className="rounded-[6px] border border-border bg-card p-4">
-        <h2 className="mb-2 text-[16px] font-semibold">{country} prices · {date}</h2>
+      <article className="card p-5">
+        <h2 className="section-title mb-3">{country} prices · {date}</h2>
         <PriceChart rows={chart} />
       </article>
-      <article className="overflow-auto rounded-[6px] border border-border bg-card">
+      <article className="table-wrap">
         <table className="table-grid">
-          <caption className="px-4 py-3 text-left text-[16px] font-semibold">Capacity prices, €/MW/h</caption>
+          <caption className="px-4 py-3 text-left section-title">Capacity prices, €/MW/h</caption>
           <thead>
             <tr>
               <th scope="col">Block</th>
