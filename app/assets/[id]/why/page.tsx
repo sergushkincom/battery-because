@@ -77,7 +77,7 @@ export default async function WhyPage({
         <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,1fr)]">
           <article className="rounded-[6px] border border-border bg-card p-4">
             <h2 className="mb-3 text-[16px] font-semibold">Revenue bridge</h2>
-            <WaterfallChart rows={waterfall} locale={q.locale} />
+            <WaterfallChart rows={waterfall} locale={q.locale} animated />
           </article>
           <article className="rounded-[6px] border border-border bg-card p-4">
             <h2 className="text-[16px] font-semibold">{explanation.headline}</h2>

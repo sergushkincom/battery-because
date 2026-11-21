@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import {
   Bar,
   CartesianGrid,
@@ -12,7 +12,17 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatEUR, type Locale } from "@/lib/format";
+import {
+  BRIDGE_BAR_MS,
+  BRIDGE_LINK_MS,
+  bridgeActiveKey,
+  bridgeEmphasis,
+  bridgeLinkEmphasis,
+  bridgeSchedule,
+  layoutBridge,
+  type BridgeBar,
+} from "@/lib/bridge";
+import { formatEUR, formatSignedEUR, type Locale } from "@/lib/format";
 import { weekdayIndex } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
@@ -214,62 +224,142 @@ export function StackedMarkets({
   );
 }
 
+const BRIDGE_W = 640;
+const BRIDGE_H = 200;
+const BRIDGE_PAD = 28;
+
 export function WaterfallChart({
   rows,
   locale,
+  animated = false,
 }: {
   rows: { label: string; cents: number; total?: boolean }[];
   locale: Locale;
+  /** Build the bars left to right. Off for the smaller bridges on the day and report pages. */
+  animated?: boolean;
 }) {
-  const bars = rows.reduce<{ label: string; cents: number; total?: boolean; start: number; end: number; endCursor: number }[]>(
-    (acc, row) => {
-      const cursor = acc.at(-1)?.endCursor ?? 0;
-      if (row.total) return [...acc, { ...row, start: 0, end: row.cents, endCursor: row.cents }];
-      return [...acc, { ...row, start: cursor, end: cursor + row.cents, endCursor: cursor + row.cents }];
-    },
-    [],
-  );
-  const values = bars.flatMap((b) => [b.start, b.end]);
-  const min = Math.min(0, ...values);
-  const max = Math.max(0, ...values);
-  const span = max - min || 1;
-  const h = 200;
-  const w = 640;
-  const pad = 28;
-  const y = (value: number) => pad + ((max - value) / span) * (h - pad * 2);
-  const gap = w / bars.length;
+  const { bars, links } = layoutBridge(rows);
+  const [pointerKey, setPointerKey] = useState<string | null>(null);
+  const [focusKey, setFocusKey] = useState<string | null>(null);
+  const keys = bars.map((bar) => bar.key);
+  const activeKey = bridgeActiveKey(pointerKey, focusKey, keys);
+  const schedule = bridgeSchedule(bars.length);
+  const frame = bridgeFrame(bars);
+
+  if (bars.length === 0 || !frame) return null;
+
+  const point = (key: string) => ({
+    onPointerEnter: () => setPointerKey(key),
+    onPointerLeave: () => setPointerKey((current) => (current === key ? null : current)),
+    onFocus: () => setFocusKey(key),
+    onBlur: () => setFocusKey((current) => (current === key ? null : current)),
+  });
 
   return (
-    <figure>
-      <svg viewBox={`0 0 ${w} ${h + 36}`} className="h-auto w-full" role="img" aria-label="Revenue bridge">
-        <line x1="0" x2={w} y1={y(0)} y2={y(0)} stroke="var(--border)" />
-        {bars.map((bar, index) => {
-          const top = y(Math.max(bar.start, bar.end));
-          const bottom = y(Math.min(bar.start, bar.end));
-          const positive = bar.end >= bar.start;
-          const fill = bar.total ? "var(--series-da)" : positive ? "var(--price-up)" : "var(--price-down)";
+    <figure
+      className={cn("bridge-chart", animated && "is-animated")}
+      key={animated ? bars.map((bar) => `${bar.key}:${bar.cents}`).join("|") : undefined}
+      style={{ "--bridge-bar": `${BRIDGE_BAR_MS}ms`, "--bridge-link": `${BRIDGE_LINK_MS}ms` } as CSSProperties}
+    >
+      <svg viewBox={`0 0 ${BRIDGE_W} ${BRIDGE_H + 36}`} className="bridge-svg h-auto w-full overflow-visible" role="group" aria-label="Revenue bridge">
+        <line x1="0" x2={BRIDGE_W} y1={frame.y(0)} y2={frame.y(0)} stroke="var(--border)" />
+        {links.map((link, index) => {
+          const from = frame.xAt(index) + frame.barWidth;
+          const to = frame.xAt(index + 1);
+          const delay = schedule[index]?.linkDelay ?? 0;
+          const y = frame.y(link.level);
           return (
-            <g key={bar.label}>
-              <rect x={index * gap + gap * 0.2} y={top} width={gap * 0.6} height={Math.max(1, bottom - top)} fill={fill} rx="2" />
-              <text x={index * gap + gap / 2} y={h + 16} textAnchor="middle" fill="var(--muted-foreground)" fontSize="10">
+            <g
+              key={`${link.fromKey}-${link.toKey}`}
+              className="bridge-link"
+              data-state={bridgeLinkEmphasis(activeKey, link)}
+              style={{ "--bridge-delay": `${delay}ms` } as CSSProperties}
+              aria-hidden="true"
+            >
+              <rect className="bridge-link-draw" x={from + 1.5} y={y - 0.5} width={Math.max(0, to - from - 3)} height={1} />
+            </g>
+          );
+        })}
+        {bars.map((bar, index) => {
+          const top = frame.y(Math.max(bar.start, bar.end));
+          const bottom = frame.y(Math.min(bar.start, bar.end));
+          const up = bar.end >= bar.start;
+          const fill = bar.total ? "var(--series-da)" : up ? "var(--price-up)" : "var(--price-down)";
+          const emphasis = bridgeEmphasis(activeKey, bar.key);
+          const amount = bridgeAmount(bar, locale);
+          const delay = schedule[index]?.barDelay ?? 0;
+          return (
+            <g
+              key={bar.key}
+              className="bridge-col"
+              data-state={emphasis}
+              style={{ "--bridge-delay": `${delay}ms` } as CSSProperties}
+              {...point(bar.key)}
+            >
+              <rect className="bridge-hit" x={index * frame.slot} y={0} width={frame.slot} height={BRIDGE_H + 28} fill="transparent" aria-hidden="true" />
+              <rect
+                className="bridge-bar"
+                data-dir={up ? "up" : "down"}
+                x={frame.xAt(index)}
+                y={top}
+                width={frame.barWidth}
+                height={Math.max(1.5, bottom - top)}
+                fill={fill}
+                rx="2"
+                tabIndex={0}
+                role="img"
+                aria-label={`${bar.label}, ${amount}`}
+                aria-current={emphasis === "active" ? "true" : undefined}
+                style={{ "--bridge-origin": up ? "bottom" : "top" } as CSSProperties}
+              />
+              <text className="bridge-label" x={frame.xAt(index) + frame.barWidth / 2} y={BRIDGE_H + 16} textAnchor="middle" fill="var(--muted-foreground)" fontSize="10" aria-hidden="true">
                 {shortBridgeLabel(bar.label)}
               </text>
             </g>
           );
         })}
       </svg>
-      <ul className="mt-2 grid gap-1">
-        {bars.map((bar) => (
-          <li key={bar.label} className="flex justify-between gap-3 text-[12px]">
-            <span>{bar.label}</span>
-            <span className={cn("num", !bar.total && bar.cents < 0 && "text-down", !bar.total && bar.cents > 0 && "text-up")}>
-              {bar.total ? formatEUR(bar.cents, locale, 0) : `${bar.cents > 0 ? "+" : bar.cents < 0 ? "−" : ""}${formatEUR(Math.abs(bar.cents), locale, 0)}`}
-            </span>
-          </li>
-        ))}
+      <ul className="mt-2 grid gap-0.5">
+        {bars.map((bar) => {
+          const emphasis = bridgeEmphasis(activeKey, bar.key);
+          const tone = bar.total ? "total" : bar.cents < 0 ? "down" : bar.cents > 0 ? "up" : "flat";
+          return (
+            <li
+              key={bar.key}
+              className="bridge-row flex justify-between gap-3 px-2 py-1 text-[12px]"
+              data-state={emphasis}
+              data-tone={tone}
+              tabIndex={0}
+              aria-current={emphasis === "active" ? "true" : undefined}
+              {...point(bar.key)}
+            >
+              <span>{bar.label}</span>
+              <span className={cn("num", !bar.total && bar.cents < 0 && "text-down", !bar.total && bar.cents > 0 && "text-up")}>
+                {bridgeAmount(bar, locale)}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </figure>
   );
+}
+
+function bridgeAmount(bar: BridgeBar, locale: Locale): string {
+  return bar.total ? formatEUR(bar.cents, locale, 0) : formatSignedEUR(bar.cents, locale, 0);
+}
+
+function bridgeFrame(bars: BridgeBar[]) {
+  if (bars.length === 0) return null;
+  const values = bars.flatMap((bar) => [bar.start, bar.end]);
+  const min = Math.min(0, ...values);
+  const max = Math.max(0, ...values);
+  const span = max - min || 1;
+  const y = (value: number) => BRIDGE_PAD + ((max - value) / span) * (BRIDGE_H - BRIDGE_PAD * 2);
+  const slot = BRIDGE_W / bars.length;
+  const barWidth = slot * 0.56;
+  const xAt = (index: number) => index * slot + (slot - barWidth) / 2;
+  return { y, slot, barWidth, xAt };
 }
 
 export function RevenueHeatmap({

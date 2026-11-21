@@ -153,3 +153,120 @@ body {
   font-weight: 600;
   background: var(--surface);
 }
+
+.bridge-svg {
+  font-family: var(--font-sans), "IBM Plex Sans", sans-serif;
+}
+
+.bridge-col,
+.bridge-link,
+.bridge-row {
+  transition:
+    opacity 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bridge-col[data-state="dimmed"],
+.bridge-row[data-state="dimmed"] {
+  opacity: 0.38;
+}
+
+.bridge-link {
+  opacity: 0.7;
+}
+
+.bridge-link[data-state="dimmed"] {
+  opacity: 0.18;
+}
+
+.bridge-link[data-state="active"] {
+  opacity: 1;
+}
+
+.bridge-link-draw {
+  fill: var(--muted-foreground);
+}
+
+.bridge-link[data-state="active"] .bridge-link-draw {
+  fill: var(--foreground);
+}
+
+.bridge-col[data-state="active"] .bridge-bar {
+  stroke: var(--foreground);
+  stroke-width: 1.25;
+}
+
+.bridge-row {
+  border-radius: 4px;
+}
+
+.bridge-row[data-state="active"] {
+  background: var(--muted);
+  box-shadow: inset 2px 0 0 var(--series-da);
+}
+
+.bridge-row[data-state="active"][data-tone="up"] {
+  box-shadow: inset 2px 0 0 var(--price-up);
+}
+
+.bridge-row[data-state="active"][data-tone="down"] {
+  box-shadow: inset 2px 0 0 var(--price-down);
+}
+
+.bridge-bar {
+  outline: none;
+}
+
+.bridge-bar:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bridge-chart.is-animated .bridge-bar {
+    transform-box: fill-box;
+    transform-origin: center var(--bridge-origin, bottom);
+    animation: bridge-grow var(--bridge-bar, 260ms) cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: var(--bridge-delay, 0ms);
+  }
+
+  .bridge-chart.is-animated .bridge-link-draw {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: bridge-draw var(--bridge-link, 140ms) cubic-bezier(0.65, 0, 0.35, 1) backwards;
+    animation-delay: var(--bridge-delay, 0ms);
+  }
+
+  .bridge-chart.is-animated .bridge-label {
+    animation: bridge-label var(--bridge-bar, 260ms) cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: var(--bridge-delay, 0ms);
+  }
+}
+
+@keyframes bridge-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes bridge-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes bridge-label {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
