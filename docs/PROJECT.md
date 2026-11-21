@@ -45,7 +45,7 @@ The owner hands the battery to an algorithm and gets a revenue number back. The 
 | Assets | `/assets` | The same assets as a filterable grid, with footer totals. |
 | Markets | `/markets` | Day-ahead and intraday prices, plus capacity prices, for one country on the 15-minute clock. |
 | Asset day | `/assets/[id]` | What the battery did on one day: revenue calendar, 15-minute dispatch, state of charge, reserves, availability, weather, and the day story. |
-| Why | `/assets/[id]/why` | Why revenue changed. A bridge and plain-language sentences. Suggested questions only; there is no free chat. |
+| Why | `/assets/[id]/why` | Why revenue changed. A bridge that builds left to right, each bar tied to its driver, and plain-language sentences. Suggested questions only; there is no free chat. |
 | Control | `/assets/[id]/control` | Autonomy matrix, pending approvals, a maintenance window with its forecast impact, and time-boxed overrides. |
 | Audit log | `/log` and `/assets/[id]/log` | Chronological trace, filterable, exportable as CSV. |
 | Reports | `/reports` and `/reports/[period]` | Month or quarter, for an investor, a board, or internal use. PDF, CSV, and a copyable summary. |
@@ -103,6 +103,7 @@ v1 is the prototype on this branch.
 Done:
 
 - Portfolio, asset day, why-bridge, autonomy and approvals, maintenance window, audit log, reports (PDF and CSV), operator queue, go-live stepper, markets.
+- The Why bridge builds one bar at a time from the left, with a thin connector drawing in between neighbours. Hover or keyboard focus on a bar or its driver row highlights the pair. Reduced motion shows the finished chart at once.
 - Light and dark themes, EN/DE number formats, keyboard skip link, empty and error states, stale-data state ("Data delayed — last telemetry 14:05").
 - Seeded book, explainer, and tests that the explanation numbers match the computed data.
 - README, screenshots, and a short GIF of the timeline and the "why revenue changed" flow.
