@@ -78,7 +78,7 @@ Dense B2B console. Not a marketing page.
 - Type scale: page title 22/28 semibold, section title 15/22 semibold, labels 12 medium muted, body 13. KPI figures 26px mono.
 - Controls: one height (32px), one border, a quiet hover and a 3px ring on keyboard focus. The period switch is a segmented control; selects use one chevron.
 - Status chips carry a coloured dot and a word. Every text and background pair holds WCAG AA in both themes.
-- Motion: 120–220ms ease-out for hover, focus, tabs and new panels; nothing loops except the "needs a decision" pulse, and reduced motion turns it all off. CSS first; the `motion` library only where an element moves between places (the report audience underline), under `MotionConfig reducedMotion="user"`.
+- Motion: 120–220ms ease-out for hover, focus, tabs and new panels. Portfolio revenue, versus plan, versus the market benchmark, and discharged energy count up once from zero when the card enters the view, then the reason line slides in. Nothing loops except the "needs a decision" pulse. Reduced motion shows the finished figures. CSS first; the `motion` library only where an element moves between places (the report audience underline), under `MotionConfig reducedMotion="user"`.
 - No Geist.
 - Light theme for owners. Dark theme for operators. Both are complete.
 - References, restyled onto these tokens: shadcn/ui (component primitives), ReUI (data grid, filters, timeline, trace), Twenty (density and the app shell), affectUI (named states and approve / reject).
@@ -109,12 +109,14 @@ Done:
 
 - Portfolio, asset day, why-bridge, autonomy and approvals, maintenance window, audit log, reports (PDF and CSV), operator queue, go-live stepper, markets.
 - The Why bridge builds one bar at a time from the left, with a thin connector drawing in between neighbours. Hover or keyboard focus on a bar or its driver row highlights the pair. Reduced motion shows the finished chart at once.
+- Portfolio revenue, versus plan, versus the market benchmark, and discharged energy count up from zero the first time the card is in view. The reason line slides in when the count stops. Reduced motion shows the finished figures.
 - Light and dark themes, EN/DE number formats, keyboard skip link, empty and error states, stale-data state ("Data delayed — last telemetry 14:05").
 - UI pass (Nov 2026): app shell with icons and a mobile menu; a header that stays on one line from phone to desktop; the same five tabs on every asset page; a calendar with weekdays and months; any quarter-hour on the dispatch chart can be picked; tables scroll inside their card on a phone.
 - Reports redesign (Nov 2026): reports read as documents, an investor letter on paper. The list is one table on the sheet with revenue, plan, benchmark, availability, incidents and a per-day bar strip, and it marks partial periods. A report is a sheet: a serif headline that states the result against plan ("November: €126,966, 17% under plan."), the explanation as the lede, the audience as underlined words, four key figures, then numbered sections: revenue per day against plan, the bridge as a statement with a double rule under the result, assets and outages, and the manager's note. The report's explanation covers the selected portfolio only; before, its bridge used the whole book.
 - Seeded book, explainer, and tests that the explanation numbers match the computed data.
 - README, screenshots, and a short GIF of the timeline and the "why revenue changed" flow.
 - CI, MIT license (Denys Sergushkin / sergushkincom).
+- Portfolio's revenue reason now explains the selected portfolio only. Before, `portfolioExplain` passed no asset scope, so Stadtwerk Elbe and Kestrel Fund I both showed the whole book's change (for example −€194,012 over 7 days instead of −€35,610 and −€158,402).
 
 The live URL in the README (`https://battery-because.vercel.app`) is a placeholder. v1 is not deployed.
 
@@ -124,7 +126,6 @@ The live URL in the README (`https://battery-because.vercel.app`) is a placehold
 - Data grid, filters, timeline, and approval trace follow the ReUI and affectUI patterns but are built on these tokens. The free registry blocks were not imported, so the console would not pick up a second theme.
 - Questions are a fixed set of intents. An LLM can sit behind `explain()` later; it is not wired up.
 - No real market data, no multi-user auth, no email alerts.
-- Portfolio (`portfolioExplain` in `lib/page-model.ts`) still calls `explainWindow` with `assetId: null` and no `assetIds`, so its explanation covers the whole book rather than the selected portfolio. Reports pass `assetIds`; Portfolio should too.
 - The market benchmark is energy arbitrage with perfect hindsight, then 80%. It does not include capacity revenue, so a capacity-heavy day can sit "above market" and still miss the plan.
 
 ## Rules

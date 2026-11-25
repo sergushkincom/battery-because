@@ -1,4 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import { formatCount } from "../../lib/format";
+import { rollup } from "../../lib/explain";
+import { getDataset } from "../../lib/mock/generate";
+import { portfolioExplain } from "../../lib/page-model";
+import { readQuery } from "../../lib/query";
 
 const routes: { path: string; heading: string }[] = [
   { path: "/", heading: "Kestrel Fund I" },
@@ -51,6 +56,88 @@ test("report exports a csv and switches audience", async ({ page }) => {
   await page.getByRole("navigation", { name: "Audience" }).getByRole("link", { name: "Board" }).click();
   await expect(page).toHaveURL(/audience=board/);
   await expect(page.getByText("Board view: availability")).toBeVisible();
+});
+
+function bookFigures() {
+  const q = readQuery({});
+  const view = portfolioExplain(getDataset(), q);
+  const metrics = rollup(view.actual);
+  return {
+    revenue: formatCount("eur", metrics.totalCents, metrics.totalCents, q.locale),
+    plan: formatCount("signed-eur", metrics.totalCents - metrics.planCents, metrics.totalCents - metrics.planCents, q.locale),
+    benchmark: formatCount(
+      "signed-eur",
+      metrics.totalCents - metrics.benchmarkCents,
+      metrics.totalCents - metrics.benchmarkCents,
+      q.locale,
+    ),
+    energy: formatCount("mwh", metrics.dischargedMwh, metrics.dischargedMwh, q.locale),
+    headline: view.explanation.headline,
+  };
+}
+
+function figure(page: Page, id: string) {
+  return page.locator(`[data-kpi="${id}"] [data-shown]`);
+}
+
+function digits(text: string): number {
+  const n = Number(text.replace(/[^\d]/g, ""));
+  return text.includes("−") ? -n : n;
+}
+
+test("reduced motion shows the finished portfolio figures", async ({ page }) => {
+  const book = bookFigures();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const revenue = figure(page, "revenue");
+  await expect(page.locator("[data-kpi='revenue'] .kpi-reason")).toHaveAttribute("data-state", "ready");
+  await expect(revenue).toHaveText(book.revenue);
+  await expect(figure(page, "plan")).toHaveText(book.plan);
+  await expect(figure(page, "benchmark")).toHaveText(book.benchmark);
+  await expect(figure(page, "energy")).toHaveText(book.energy);
+  await expect(page.locator("[data-kpi='revenue'] .kpi-reason")).toHaveText(book.headline);
+  await page.waitForTimeout(500);
+  await expect(revenue).toHaveText(book.revenue);
+  await expect(page.locator("[data-kpi='revenue'] .kpi-reason")).toHaveCSS("opacity", "1");
+});
+
+test("portfolio figures count up from zero, then the reason slides in", async ({ page }) => {
+  const book = bookFigures();
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.addInitScript(() => {
+    const samples: Record<string, string[]> = { revenue: [], plan: [], benchmark: [], energy: [] };
+    (window as unknown as { __kpi: typeof samples }).__kpi = samples;
+    const started = performance.now();
+    const tick = () => {
+      let done = true;
+      for (const id of Object.keys(samples)) {
+        const card = document.querySelector(`[data-kpi="${id}"]`);
+        const text = card?.querySelector("[data-shown]")?.textContent?.trim();
+        if (text && samples[id][samples[id].length - 1] !== text) samples[id].push(text);
+        if (card?.querySelector(".kpi-reason")?.getAttribute("data-state") !== "in") done = false;
+      }
+      if (!done && performance.now() - started < 4000) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await page.goto("/");
+  for (const id of ["revenue", "plan", "benchmark", "energy"] as const) {
+    await expect(page.locator(`[data-kpi="${id}"] .kpi-reason`)).toHaveAttribute("data-state", "in");
+    await expect(figure(page, id)).toHaveText(book[id]);
+    await expect(page.locator(`[data-kpi="${id}"] .kpi-reason`)).toHaveCSS("opacity", "1");
+  }
+  await expect(page.locator("[data-kpi='revenue'] .kpi-reason")).toHaveText(book.headline);
+  const samples = await page.evaluate(() => (window as unknown as { __kpi: Record<string, string[]> }).__kpi);
+  for (const id of ["revenue", "plan", "benchmark", "energy"] as const) {
+    const seen = samples[id];
+    const landed = digits(book[id]);
+    expect(seen.some((text) => digits(text) === 0)).toBe(true);
+    expect(seen.some((text) => {
+      const value = Math.abs(digits(text));
+      return value > 0 && value < Math.abs(landed);
+    })).toBe(true);
+    expect(digits(seen[seen.length - 1])).toBe(landed);
+  }
 });
 
 test("skip link is the first tab stop", async ({ page }) => {

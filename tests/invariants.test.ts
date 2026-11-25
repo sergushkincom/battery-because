@@ -184,3 +184,17 @@ describe("reports", () => {
     }
   });
 });
+
+describe("portfolio explanation", () => {
+  it("covers the selected portfolio's trading assets only", async () => {
+    const { portfolioExplain } = await import("../lib/page-model");
+    const { readQuery } = await import("../lib/query");
+    for (const portfolio of ds.portfolios) {
+      for (const period of ["yesterday", "7d", "mtd", "ytd"]) {
+        const view = portfolioExplain(ds, readQuery({ portfolio: portfolio.id, period }));
+        expect(view.explanation.actualCents).toBe(rollup(view.actual).totalCents);
+        expect(view.explanation.bridge.reduce((sum, row) => sum + row.cents, 0)).toBe(view.explanation.actualCents - view.explanation.baselineCents);
+      }
+    }
+  });
+});
