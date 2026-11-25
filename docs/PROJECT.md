@@ -77,14 +77,14 @@ Dense B2B console. Not a marketing page.
 - Type scale: page title 22/28 semibold, section title 15/22 semibold, labels 12 medium muted, body 13. KPI figures 26px mono.
 - Controls: one height (32px), one border, a quiet hover and a 3px ring on keyboard focus. The period switch is a segmented control; selects use one chevron.
 - Status chips carry a coloured dot and a word. Every text and background pair holds WCAG AA in both themes.
-- Motion: 120–220ms ease-out for hover, focus, tabs and new panels; nothing loops except the "needs a decision" pulse, and reduced motion turns it all off.
+- Motion: 120–220ms ease-out for hover, focus, tabs and new panels; nothing loops except the "needs a decision" pulse, and reduced motion turns it all off. CSS first; the `motion` library only where an element moves between places (the report audience pill), under `MotionConfig reducedMotion="user"`.
 - No Geist.
 - Light theme for owners. Dark theme for operators. Both are complete.
 - References, restyled onto these tokens: shadcn/ui (component primitives), ReUI (data grid, filters, timeline, trace), Twenty (density and the app shell), affectUI (named states and approve / reject).
 
 ## Stack, scripts, checks
 
-Next.js 16.4.6 (patched), TypeScript strict, Tailwind CSS, Recharts, react-pdf. Vitest for the book and the explainer. Playwright for smoke (screens, CSV, PDF, skip link). Deploy target is Vercel, with no env vars.
+Next.js 16.4.6 (patched), TypeScript strict, Tailwind CSS, Recharts, Motion, react-pdf. Vitest for the book and the explainer. Playwright for smoke (screens, CSV, PDF, skip link). Deploy target is Vercel, with no env vars.
 
 ```bash
 npm i
@@ -110,6 +110,7 @@ Done:
 - The Why bridge builds one bar at a time from the left, with a thin connector drawing in between neighbours. Hover or keyboard focus on a bar or its driver row highlights the pair. Reduced motion shows the finished chart at once.
 - Light and dark themes, EN/DE number formats, keyboard skip link, empty and error states, stale-data state ("Data delayed — last telemetry 14:05").
 - UI pass (Nov 2026): app shell with icons and a mobile menu; a header that stays on one line from phone to desktop; the same five tabs on every asset page; a calendar with weekdays and months; any quarter-hour on the dispatch chart can be picked; tables scroll inside their card on a phone.
+- Reports redesign (Nov 2026): the list is one dense table with revenue, plan, benchmark, availability, incidents and a per-day bar strip for every period, and it marks partial periods. A report opens with its actions in the header, a segmented audience switch, one strip of key figures, revenue per day against plan, the bridge as a ledger on one shared scale, and the summary, incidents and manager's note in a side column. The report's explanation now covers the selected portfolio only; before, its bridge used the whole book.
 - Seeded book, explainer, and tests that the explanation numbers match the computed data.
 - README, screenshots, and a short GIF of the timeline and the "why revenue changed" flow.
 - CI, MIT license (Denys Sergushkin / sergushkincom).
@@ -122,6 +123,7 @@ The live URL in the README (`https://battery-because.vercel.app`) is a placehold
 - Data grid, filters, timeline, and approval trace follow the ReUI and affectUI patterns but are built on these tokens. The free registry blocks were not imported, so the console would not pick up a second theme.
 - Questions are a fixed set of intents. An LLM can sit behind `explain()` later; it is not wired up.
 - No real market data, no multi-user auth, no email alerts.
+- Portfolio (`portfolioExplain` in `lib/page-model.ts`) still calls `explainWindow` with `assetId: null` and no `assetIds`, so its explanation covers the whole book rather than the selected portfolio. Reports pass `assetIds`; Portfolio should too.
 - The market benchmark is energy arbitrage with perfect hindsight, then 80%. It does not include capacity revenue, so a capacity-heavy day can sit "above market" and still miss the plan.
 
 ## Rules

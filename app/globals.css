@@ -523,3 +523,155 @@ body {
     opacity: 1;
   }
 }
+
+/* Reports: list of periods as a dense table, one row per report. */
+.report-table td,
+.report-table tbody th {
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+.report-group th {
+  padding: 7px 14px 6px !important;
+  font-size: 11px;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background: var(--surface);
+}
+.report-table tbody + tbody .report-group th {
+  border-top: 1px solid var(--border);
+}
+.report-row {
+  position: relative;
+}
+/* The period name is the link; its hit area covers the whole row. */
+.report-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.report-link:focus-visible {
+  outline: none;
+}
+.report-row:has(.report-link:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.report-chevron {
+  transition: transform 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+.report-row:hover .report-chevron {
+  transform: translateX(2px);
+  color: var(--foreground);
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.legend-line {
+  display: inline-block;
+  width: 12px;
+  border-top: 1.5px dashed color-mix(in srgb, var(--foreground) 60%, transparent);
+}
+
+/* Reports: key figures share one card, split by hairlines. */
+.kpi-strip > .kpi-cell {
+  border-color: var(--border);
+}
+.kpi-strip > .kpi-cell + .kpi-cell {
+  border-left-width: 1px;
+}
+@media (max-width: 767px) {
+  .kpi-strip > .kpi-cell:nth-child(odd) {
+    border-left-width: 0;
+  }
+  .kpi-strip > .kpi-cell:nth-child(n + 3) {
+    border-top-width: 1px;
+  }
+  .kpi-strip > .kpi-cell:last-child {
+    grid-column: span 2;
+  }
+}
+
+/* Reports: audience switch. The pill moves; the link itself stays flat. */
+.segmented > a.audience-option[aria-current="true"] {
+  background: transparent;
+  box-shadow: none;
+}
+.audience-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 5px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.08), 0 0 0 1px var(--border);
+}
+
+/* Reports: the bridge as a ledger. */
+.ledger {
+  display: grid;
+}
+.ledger-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) minmax(0, 1fr) 96px;
+  align-items: center;
+  gap: 16px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  transition: background-color 120ms var(--ease-out);
+}
+.ledger-row:not(.ledger-total):hover {
+  background: var(--muted);
+}
+.ledger-total {
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  margin-bottom: 4px;
+}
+.ledger-total.is-end {
+  border-bottom: 0;
+  border-top: 1px solid var(--border);
+  margin: 4px 0 0;
+}
+.ledger-track {
+  position: relative;
+  height: 12px;
+  background: linear-gradient(var(--border-strong), var(--border-strong)) center / 1px 100% no-repeat;
+}
+.ledger-bar {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  border-radius: 2px;
+}
+.ledger-bar.is-up {
+  background: var(--price-up);
+}
+.ledger-bar.is-down {
+  background: var(--price-down);
+}
+@media (max-width: 520px) {
+  .ledger-row {
+    grid-template-columns: minmax(0, 1fr) 64px 88px;
+    gap: 10px;
+  }
+}
+
+.summary-list > li {
+  position: relative;
+  padding-left: 14px;
+}
+.summary-list > li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 5px;
+  height: 1.5px;
+  background: var(--muted-foreground);
+}
