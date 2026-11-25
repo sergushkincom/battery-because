@@ -166,3 +166,21 @@ describe("maintenance windows", () => {
     expect(suggestion!.cents).toBe(windowImpact(slots, suggestion!.start, suggestion!.end, 10_000, 10_000));
   });
 });
+
+describe("reports", () => {
+  it("explains a portfolio report with that portfolio's assets only", async () => {
+    const { explainWindow, portfolioAssets } = await import("../lib/selectors");
+    const { REPORTS, reportFigures } = await import("../lib/reports");
+    const { isTradingAsset } = await import("../lib/mock/assets");
+    for (const portfolio of ds.portfolios) {
+      const ids = new Set(portfolioAssets(ds, portfolio.id).filter((asset) => isTradingAsset(asset.id)).map((asset) => asset.id));
+      for (const period of REPORTS) {
+        const figures = reportFigures(ds, period, ids);
+        const explanation = explainWindow(ds, { assetId: null, assetIds: ids, from: period.from, to: period.to, mode: "forecast", baselineLabel: "the morning forecast" });
+        expect(explanation.actualCents).toBe(figures.metrics.totalCents);
+        expect(explanation.bridge.reduce((sum, row) => sum + row.cents, 0)).toBe(explanation.actualCents - explanation.baselineCents);
+        expect(figures.days.reduce((sum, day) => sum + day.cents, 0)).toBe(figures.metrics.totalCents);
+      }
+    }
+  });
+});
