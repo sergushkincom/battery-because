@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
 import { Suspense } from "react";
 import { DemoProvider } from "@/components/demo-store";
 import { Shell } from "@/components/shell";
@@ -18,6 +18,14 @@ const mono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
 });
 
+/* Serif is for documents only: the report sheet. The console stays in Plex Sans. */
+const serif = IBM_Plex_Serif({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
+  variable: "--font-plex-serif",
+});
+
 export const metadata: Metadata = {
   title: "Because — battery revenue, with the reason",
   description: "A console for owners and operators of grid-scale batteries. Every number comes with a reason.",
@@ -34,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pending = ds.approvals.filter((item) => item.state === "pending").length;
 
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

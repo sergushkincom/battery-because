@@ -48,6 +48,16 @@ test("investor report exports a pdf", async ({ page }) => {
   expect(file.suggestedFilename()).toContain(".pdf");
 });
 
+test("report exports a csv and switches audience", async ({ page }) => {
+  await page.goto("/reports/2026-11?portfolio=elbe");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export CSV" }).click();
+  expect((await download).suggestedFilename()).toBe("because-2026-11.csv");
+  await page.getByRole("navigation", { name: "Audience" }).getByRole("link", { name: "Board" }).click();
+  await expect(page).toHaveURL(/audience=board/);
+  await expect(page.getByText("Board view: availability")).toBeVisible();
+});
+
 function bookFigures() {
   const q = readQuery({});
   const view = portfolioExplain(getDataset(), q);

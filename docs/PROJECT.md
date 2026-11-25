@@ -71,20 +71,21 @@ All data is seeded mock data. There is no live market feed and no environment va
 
 Dense B2B console. Not a marketing page.
 
-- Type: IBM Plex Sans for the interface, IBM Plex Mono for money, power, and time. Tabular figures. Body 13px.
+- Type: IBM Plex Sans for the interface, IBM Plex Mono for money, power, and time. Tabular figures. Body 13px. IBM Plex Serif only on report documents (headline, lede, section titles, key figures).
+- Reports are documents: a paper sheet (`.paper`) on a warm desk, with its own tokens (`--desk`, `--paper`, `--paper-rule`, `--paper-ink`, `--paper-muted`) in both themes. Inside the sheet the console tokens point at the paper ones, so shared parts follow.
 - Colour: navy for actions, amber for attention. Charge is blue (cyan), discharge is amber. Price up and price down are labelled as well as coloured. No mint.
 - Radius 8px on cards, 6px on controls, full round on status chips. Opaque surfaces, 1px borders and a very light card shadow. No blur, no glass, no gradient on the chrome.
 - Type scale: page title 22/28 semibold, section title 15/22 semibold, labels 12 medium muted, body 13. KPI figures 26px mono.
 - Controls: one height (32px), one border, a quiet hover and a 3px ring on keyboard focus. The period switch is a segmented control; selects use one chevron.
 - Status chips carry a coloured dot and a word. Every text and background pair holds WCAG AA in both themes.
-- Motion: 120–220ms ease-out for hover, focus, tabs and new panels. Portfolio revenue, versus plan, versus the market benchmark, and discharged energy count up once from zero when the card enters the view, then the reason line slides in. Nothing loops except the "needs a decision" pulse. Reduced motion shows the finished figures.
+- Motion: 120–220ms ease-out for hover, focus, tabs and new panels. Portfolio revenue, versus plan, versus the market benchmark, and discharged energy count up once from zero when the card enters the view, then the reason line slides in. Nothing loops except the "needs a decision" pulse. Reduced motion shows the finished figures. CSS first; the `motion` library only where an element moves between places (the report audience underline), under `MotionConfig reducedMotion="user"`.
 - No Geist.
 - Light theme for owners. Dark theme for operators. Both are complete.
 - References, restyled onto these tokens: shadcn/ui (component primitives), ReUI (data grid, filters, timeline, trace), Twenty (density and the app shell), affectUI (named states and approve / reject).
 
 ## Stack, scripts, checks
 
-Next.js 16.4.6 (patched), TypeScript strict, Tailwind CSS, Recharts, react-pdf. Vitest for the book and the explainer. Playwright for smoke (screens, CSV, PDF, skip link). Deploy target is Vercel, with no env vars.
+Next.js 16.4.6 (patched), TypeScript strict, Tailwind CSS, Recharts, Motion, react-pdf. Vitest for the book and the explainer. Playwright for smoke (screens, CSV, PDF, skip link). Deploy target is Vercel, with no env vars.
 
 ```bash
 npm i
@@ -111,6 +112,7 @@ Done:
 - Portfolio revenue, versus plan, versus the market benchmark, and discharged energy count up from zero the first time the card is in view. The reason line slides in when the count stops. Reduced motion shows the finished figures.
 - Light and dark themes, EN/DE number formats, keyboard skip link, empty and error states, stale-data state ("Data delayed — last telemetry 14:05").
 - UI pass (Nov 2026): app shell with icons and a mobile menu; a header that stays on one line from phone to desktop; the same five tabs on every asset page; a calendar with weekdays and months; any quarter-hour on the dispatch chart can be picked; tables scroll inside their card on a phone.
+- Reports redesign (Nov 2026): reports read as documents, an investor letter on paper. The list is one table on the sheet with revenue, plan, benchmark, availability, incidents and a per-day bar strip, and it marks partial periods. A report is a sheet: a serif headline that states the result against plan ("November: €126,966, 17% under plan."), the explanation as the lede, the audience as underlined words, four key figures, then numbered sections: revenue per day against plan, the bridge as a statement with a double rule under the result, assets and outages, and the manager's note. The report's explanation covers the selected portfolio only; before, its bridge used the whole book.
 - Seeded book, explainer, and tests that the explanation numbers match the computed data.
 - README, screenshots, and a short GIF of the timeline and the "why revenue changed" flow.
 - CI, MIT license (Denys Sergushkin / sergushkincom).
