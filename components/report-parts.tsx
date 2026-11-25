@@ -8,7 +8,7 @@ export function DayBars({ days, className }: { days: ReportDay[]; className?: st
   const gap = 1;
   const width = days.length * 4 - gap;
   return (
-    <svg viewBox={`0 0 ${width} 20`} preserveAspectRatio="none" className={cn("day-bars block h-5 w-24", className)} aria-hidden="true">
+    <svg viewBox={`0 0 ${width} 20`} preserveAspectRatio="none" className={cn("day-bars block h-5 w-20", className)} aria-hidden="true">
       {days.map((day, index) => {
         const h = Math.max(1, (Math.max(0, day.cents) / max) * 20);
         return <rect key={day.date} x={index * 4} y={20 - h} width={4 - gap} height={h} rx="0.5" fill={day.outage ? "var(--accent)" : "var(--series-da)"} opacity={day.outage ? 1 : 0.55} />;
@@ -17,68 +17,50 @@ export function DayBars({ days, className }: { days: ReportDay[]; className?: st
   );
 }
 
-export interface LedgerRow {
+export interface StatementRow {
   key: string;
   label: string;
   cents: number;
 }
 
-/**
- * The bridge as a ledger: forecast at the top, one row per driver on a shared zero line, actual at the bottom.
- * A waterfall drawn from zero hides drivers that are 1% of the total; here every driver uses the full width.
- */
-export function BridgeLedger({
-  baselineLabel,
-  baselineCents,
-  actualCents,
+/** The bridge read as a statement: the opening figure, one indented line per driver, the result under a double rule. */
+export function BridgeStatement({
+  openLabel,
+  openCents,
+  closeLabel,
+  closeCents,
   rows,
   locale,
 }: {
-  baselineLabel: string;
-  baselineCents: number;
-  actualCents: number;
-  rows: LedgerRow[];
+  openLabel: string;
+  openCents: number;
+  closeLabel: string;
+  closeCents: number;
+  rows: StatementRow[];
   locale: Locale;
 }) {
-  const maxAbs = Math.max(1, ...rows.map((row) => Math.abs(row.cents)));
-  const net = actualCents - baselineCents;
   return (
-    <div className="ledger" role="table" aria-label="Revenue bridge">
-      <div className="ledger-row ledger-total" role="row">
-        <span role="rowheader">{baselineLabel}</span>
-        <span aria-hidden="true" />
-        <span role="cell" className="num text-right">
-          {formatEUR(baselineCents, locale, 0)}
-        </span>
-      </div>
-      {rows.map((row) => {
-        const share = (Math.abs(row.cents) / maxAbs) * 50;
-        const up = row.cents > 0;
-        return (
-          <div key={row.key} className="ledger-row" role="row">
-            <span role="rowheader">{row.label}</span>
-            <span className="ledger-track" aria-hidden="true">
-              <span
-                className={cn("ledger-bar", up ? "is-up" : "is-down")}
-                style={{ width: `${Math.max(share, 0.6)}%`, [up ? "left" : "right"]: "50%" }}
-              />
-            </span>
-            <span role="cell" className={cn("num text-right", up ? "text-up" : row.cents < 0 ? "text-down" : "text-muted-foreground")}>
-              {formatSignedEUR(row.cents, locale, 0)}
-            </span>
-          </div>
-        );
-      })}
-      <div className="ledger-row ledger-total is-end" role="row">
-        <span role="rowheader">Actual</span>
-        <span role="cell" className={cn("num text-right text-[12px]", net > 0 ? "text-up" : net < 0 ? "text-down" : "text-muted-foreground")}>
-          {formatSignedEUR(net, locale, 0)} net
-        </span>
-        <span role="cell" className="num text-right">
-          {formatEUR(actualCents, locale, 0)}
-        </span>
-      </div>
-    </div>
+    <table className="statement">
+      <caption className="sr-only">Revenue bridge</caption>
+      <tbody>
+        <tr className="open">
+          <th scope="row">{openLabel}</th>
+          <td>{formatEUR(openCents, locale, 0)}</td>
+        </tr>
+        {rows.map((row) => (
+          <tr key={row.key}>
+            <th scope="row" className="indent">
+              {row.label}
+            </th>
+            <td className={row.cents > 0 ? "text-up" : row.cents < 0 ? "text-down" : "text-muted-foreground"}>{formatSignedEUR(row.cents, locale, 0)}</td>
+          </tr>
+        ))}
+        <tr className="close">
+          <th scope="row">{closeLabel}</th>
+          <td>{formatEUR(closeCents, locale, 0)}</td>
+        </tr>
+      </tbody>
+    </table>
   );
 }
 

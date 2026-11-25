@@ -3,13 +3,13 @@ import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { ReportActions } from "@/components/report-actions";
 import { AudienceSwitch, DailyChart, ManagerNote } from "@/components/report-client";
-import { BridgeLedger, Delta } from "@/components/report-parts";
+import { BridgeStatement, Delta } from "@/components/report-parts";
 import { explainWindow } from "@/lib/selectors";
 import { formatEUR, formatMwh, formatNumber, formatSignedEUR } from "@/lib/format";
 import { OUTAGE_LABEL } from "@/lib/labels";
 import { findAsset, linkTo, loadView, tradingInPortfolio } from "@/lib/page-model";
-import { findReport, reportFigures } from "@/lib/reports";
-import { formatDayShort, formatStamp } from "@/lib/time";
+import { findReport, reportFigures, reportKind } from "@/lib/reports";
+import { formatDay, formatDayShort, formatStamp } from "@/lib/time";
 
 const AUDIENCES = [
   { id: "investor", label: "Investor", lead: "Investor view: result versus plan and versus the market benchmark." },
@@ -48,7 +48,13 @@ export default async function ReportPeriodPage({
   const partial = figures.coveredDays < figures.calendarDays;
   const planDelta = metrics.totalCents - metrics.planCents;
   const benchmarkDelta = metrics.totalCents - metrics.benchmarkCents;
-  const planPct = metrics.planCents > 0 ? Math.round((metrics.totalCents / metrics.planCents) * 100) : null;
+  const outageDays = figures.days.filter((day) => day.outage).map((day) => formatDayShort(day.date));
+  const byAsset = assets.map((item) => {
+    const rows = actual.filter((row) => row.assetId === item.id);
+    const cents = rows.reduce((sum, row) => sum + row.totalCents, 0);
+    const plan = rows.reduce((sum, row) => sum + row.budgetCents, 0);
+    return { id: item.id, name: item.name, mw: item.powerKw / 1000, cents, delta: cents - plan };
+  });
 
   const summary = [audience.lead, explanation.headline, ...explanation.sentences.map((sentence) => sentence.text)];
   const rows = [
@@ -60,30 +66,17 @@ export default async function ReportPeriodPage({
   ];
 
   return (
-    <div className="grid gap-5">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[12px] text-muted-foreground">
-        <Link href={linkTo(q, "/reports")} className="hover:text-foreground">
-          Reports
-        </Link>
-        <ChevronRight size={12} aria-hidden="true" />
-        <span aria-current="page" className="text-foreground">
-          {period.label}
-        </span>
-      </nav>
-
-      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-        <div className="grid gap-1">
-          <p className="eyebrow">
-            {name} · <span className="num">{formatDayShort(period.from)} – {formatDayShort(period.to)}</span>
-            {partial && (
-              <>
-                {" "}
-                · <span className="num">{figures.coveredDays}</span> of <span className="num">{figures.calendarDays}</span> days
-              </>
-            )}
-          </p>
-          <h1 className="page-title">{period.label}</h1>
-        </div>
+    <div className="paper-desk grid gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[13px] text-muted-foreground">
+          <Link href={linkTo(q, "/reports")} className="hover:text-foreground">
+            Reports
+          </Link>
+          <ChevronRight size={13} aria-hidden="true" />
+          <span aria-current="page" className="text-foreground">
+            {period.label}
+          </span>
+        </nav>
         <ReportActions
           periodId={period.id}
           title={`Because — ${name} — ${period.label}`}
@@ -99,121 +92,145 @@ export default async function ReportPeriodPage({
             availability_pct: row.availabilityPct.toFixed(1),
           }))}
         />
-      </header>
-
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <AudienceSwitch
-          current={audience.id}
-          options={AUDIENCES.map((item) => ({ id: item.id, label: item.label, href: linkTo(q, `/reports/${period.id}`, { audience: item.id }) }))}
-        />
-        <p className="text-muted-foreground">{audience.lead}</p>
       </div>
 
-      <section aria-label="Key figures" className="card kpi-strip grid grid-cols-2 md:grid-cols-5">
-        <Kpi label="Revenue" value={formatEUR(metrics.totalCents, q.locale, 0)} note={<>{formatEUR(metrics.totalCents / Math.max(1, figures.coveredDays), q.locale, 0)} a day</>} />
-        <Kpi
-          label="Vs plan"
-          value={<Delta cents={planDelta} locale={q.locale} />}
-          note={
-            <>
-              Plan {formatEUR(metrics.planCents, q.locale, 0)}
-              {planPct !== null && <> · {planPct}%</>}
-            </>
-          }
-        />
-        <Kpi label="Vs benchmark" value={<Delta cents={benchmarkDelta} locale={q.locale} />} note={<>Benchmark {formatEUR(metrics.benchmarkCents, q.locale, 0)}</>} />
-        <Kpi
-          label="Availability"
-          value={`${formatNumber(metrics.availabilityPct, q.locale, 1)}%`}
-          note={incidents.length === 0 ? "No outages" : `${incidents.length} ${incidents.length === 1 ? "incident" : "incidents"}`}
-        />
-        <Kpi label="Cycles a day" value={formatNumber(metrics.cycles, q.locale, 2)} note={<>Discharged {formatMwh(metrics.dischargedMwh)}</>} />
-      </section>
+      <article className="paper" aria-labelledby="report-title">
+        <header>
+          <p className="paper-eyebrow">
+            <span>
+              {name} · {reportKind(period) === "month" ? "Monthly" : "Quarterly"} report
+            </span>
+            <span>
+              {formatDay(period.from)} – {formatDay(period.to)}
+              {partial && ` · ${figures.coveredDays} of ${figures.calendarDays} days`}
+            </span>
+          </p>
+          <h1 id="report-title" className="paper-title">
+            <span className="sr-only">{period.label}. </span>
+            {period.label.split(" ")[0]}: <em>{formatEUR(metrics.totalCents, q.locale, 0)}</em>, {planVerdict(metrics.totalCents, metrics.planCents)}.
+          </h1>
+          <p className="paper-lede">{keepSigns(explanation.headline)}</p>
+          {explanation.sentences.map((sentence) => (
+            <p key={sentence.text} className="paper-lede">
+              {keepSigns(sentence.text)}
+            </p>
+          ))}
+          <AudienceSwitch
+            current={audience.id}
+            options={AUDIENCES.map((item) => ({ id: item.id, label: item.label, href: linkTo(q, `/reports/${period.id}`, { audience: item.id }) }))}
+          />
+        </header>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(300px,360px)]">
-        <div className="grid gap-4">
-          <section className="card p-5" aria-labelledby="daily-title">
-            <h2 id="daily-title" className="section-title mb-3">
-              Revenue per day
-            </h2>
-            <DailyChart days={figures.days} locale={q.locale} />
-          </section>
+        <section aria-label="Key figures" className="paper-figures">
+          <Figure label="Revenue" value={formatEUR(metrics.totalCents, q.locale, 0)} note={`${formatEUR(metrics.totalCents / Math.max(1, figures.coveredDays), q.locale, 0)} a day`} />
+          <Figure label="Vs plan" value={<Delta cents={planDelta} locale={q.locale} className="!font-serif" />} note={`plan ${formatEUR(metrics.planCents, q.locale, 0)}`} />
+          <Figure label="Vs benchmark" value={<Delta cents={benchmarkDelta} locale={q.locale} className="!font-serif" />} note={`benchmark ${formatEUR(metrics.benchmarkCents, q.locale, 0)}`} />
+          <Figure
+            label="Availability"
+            value={`${formatNumber(metrics.availabilityPct, q.locale, 1)}%`}
+            note={incidents.length === 0 ? "no outages" : `${incidents.length} ${incidents.length === 1 ? "incident" : "incidents"}`}
+          />
+        </section>
 
-          <section className="card p-5" aria-labelledby="bridge-title">
-            <div className="mb-3 grid gap-0.5">
-              <h2 id="bridge-title" className="section-title">
-                What moved revenue
-              </h2>
-              <p className="text-[12px] text-muted-foreground">Bridge from the morning forecast to the actual result. Each driver is drawn on the same scale.</p>
-            </div>
-            <BridgeLedger
-              baselineLabel="Forecast"
-              baselineCents={explanation.baselineCents}
-              actualCents={explanation.actualCents}
-              locale={q.locale}
-              rows={explanation.bridge.filter((row) => row.cents !== 0).map((row) => ({ key: row.label, label: row.label, cents: row.cents }))}
-            />
-          </section>
-        </div>
+        <section className="paper-section" aria-labelledby="s-daily">
+          <h2 id="s-daily" className="paper-h2">
+            <i>01</i>Revenue per day
+          </h2>
+          <p className="paper-caption">
+            Navy bars are revenue, the dashed line is the plan.
+            {outageDays.length > 0 && ` Amber marks a day with an outage: ${outageDays.join(", ")}.`}
+          </p>
+          <DailyChart days={figures.days} locale={q.locale} />
+        </section>
 
-        <aside className="grid gap-4">
-          <section className="card p-5" aria-labelledby="summary-title">
-            <h2 id="summary-title" className="label mb-2">
-              Summary
-            </h2>
-            <p className="item-title">{explanation.headline}</p>
-            <ul className="summary-list mt-3 grid gap-2.5">
-              {explanation.sentences.map((sentence) => (
-                <li key={sentence.text}>{sentence.text}</li>
+        <section className="paper-section" aria-labelledby="s-bridge">
+          <h2 id="s-bridge" className="paper-h2">
+            <i>02</i>From forecast to result
+          </h2>
+          <p className="paper-caption">The bridge from the morning forecast to actual revenue, read as a statement.</p>
+          <BridgeStatement
+            openLabel="Morning forecast"
+            openCents={explanation.baselineCents}
+            closeLabel="Actual revenue"
+            closeCents={explanation.actualCents}
+            locale={q.locale}
+            rows={explanation.bridge.filter((row) => row.cents !== 0).map((row) => ({ key: row.label, label: row.label, cents: row.cents }))}
+          />
+        </section>
+
+        <section className="paper-section" aria-labelledby="s-assets">
+          <h2 id="s-assets" className="paper-h2">
+            <i>03</i>Assets and availability
+          </h2>
+          <p className="paper-caption">Revenue by asset against its plan, then every outage in the period.</p>
+          <table className="statement">
+            <caption className="sr-only">Revenue by asset and incidents</caption>
+            <tbody>
+              {byAsset.map((row) => (
+                <tr key={row.id}>
+                  <th scope="row">
+                    {row.name} <span className="text-[12px] text-muted-foreground">{formatNumber(row.mw, q.locale, 0)} MW</span>
+                  </th>
+                  <td>{formatEUR(row.cents, q.locale, 0)}</td>
+                  <td className="w-28">
+                    <Delta cents={row.delta} locale={q.locale} />
+                  </td>
+                </tr>
               ))}
-            </ul>
-          </section>
+              {incidents.map((incident) => {
+                const where = ds.assets.find((item) => item.id === incident.assetId);
+                const zone = where?.timezone ?? "Europe/Berlin";
+                return (
+                  <tr key={`${incident.assetId}-${incident.start}`}>
+                    <td colSpan={3} className="quiet">
+                      <span className="mr-2 inline-block size-1.5 -translate-y-px rounded-full bg-accent" aria-hidden="true" />
+                      {OUTAGE_LABEL[incident.reason]} at {where?.name}, {formatStamp(incident.start, zone)} – {formatStamp(incident.end, zone)}, {formatNumber(incident.lostKw / 1000, q.locale, 1)} MW.
+                    </td>
+                  </tr>
+                );
+              })}
+              <tr>
+                <td colSpan={3} className="quiet">
+                  {incidents.length === 0 && "No outages in this period. "}
+                  {formatNumber(metrics.cycles, q.locale, 2)} cycles a day on average, {formatMwh(metrics.dischargedMwh)} discharged.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
 
-          <section className="card p-5" aria-labelledby="incidents-title">
-            <h2 id="incidents-title" className="section-title mb-2">
-              Availability and incidents
-            </h2>
-            {incidents.length === 0 ? (
-              <p className="text-muted-foreground">No outages in this period.</p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {incidents.map((incident) => {
-                  const where = ds.assets.find((item) => item.id === incident.assetId);
-                  const zone = where?.timezone ?? "Europe/Berlin";
-                  return (
-                    <li key={`${incident.assetId}-${incident.start}`} className="grid gap-0.5 py-2.5 first:pt-0 last:pb-0">
-                      <span className="flex items-baseline justify-between gap-3">
-                        <span className="inline-flex items-center gap-2 font-medium">
-                          <i className="size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
-                          {OUTAGE_LABEL[incident.reason]}
-                        </span>
-                        <span className="num text-[12px]">{formatNumber(incident.lostKw / 1000, q.locale, 1)} MW</span>
-                      </span>
-                      <span className="pl-3.5 text-[12px] text-muted-foreground">
-                        {where?.name} · <span className="num">{formatStamp(incident.start, zone)} – {formatStamp(incident.end, zone)}</span>
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
+        <section className="paper-section">
+          <ManagerNote periodId={period.id} />
+        </section>
 
-          <section className="card p-5">
-            <ManagerNote periodId={period.id} />
-          </section>
-        </aside>
-      </div>
+        <footer className="paper-footer">
+          <span>{audience.lead}</span>
+          <span>Seeded demo book · Because</span>
+        </footer>
+      </article>
     </div>
   );
 }
 
-function Kpi({ label, value, note }: { label: string; value: React.ReactNode; note: React.ReactNode }) {
+/** Keep a sign with its amount: "+€88,391" must not break after the "+". */
+function keepSigns(text: string): string {
+  return text.replace(/([+\u2212\-–])(€)/g, "$1\u2060$2");
+}
+
+function planVerdict(totalCents: number, planCents: number): string {
+  if (planCents <= 0) return "no plan set";
+  const pct = Math.round((totalCents / planCents - 1) * 100);
+  if (pct < 0) return `${-pct}% under plan`;
+  if (pct > 0) return `${pct}% over plan`;
+  return "on plan";
+}
+
+function Figure({ label, value, note }: { label: string; value: React.ReactNode; note: string }) {
   return (
-    <div className="kpi-cell grid content-start gap-1 px-5 py-4">
-      <p className="label">{label}</p>
-      <p className="num text-[22px] font-medium leading-[28px] tracking-[-0.02em]">{value}</p>
-      <p className="num text-[12px] text-muted-foreground">{note}</p>
+    <div>
+      <p className="paper-label">{label}</p>
+      <p className="paper-figure">{value}</p>
+      <p className="text-[12px] text-muted-foreground">{note}</p>
     </div>
   );
 }

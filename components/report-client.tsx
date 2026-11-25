@@ -11,17 +11,17 @@ import { cn } from "@/lib/utils";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-/** Segmented control for the report audience. The selected pill slides between options instead of jumping. */
+/** The report audience as plain words. The amber underline slides to the chosen one; reduced motion makes it jump. */
 export function AudienceSwitch({ options, current }: { options: { id: string; label: string; href: string }[]; current: string }) {
   return (
-    <MotionConfig reducedMotion="user" transition={{ duration: 0.2, ease: EASE }}>
-      <nav aria-label="Audience" className="segmented relative">
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: EASE }}>
+      <nav aria-label="Audience" className="audience">
         {options.map((option) => {
           const active = option.id === current;
           return (
-            <Link key={option.id} href={option.href} scroll={false} aria-current={active ? "true" : undefined} className="audience-option relative">
-              {active && <motion.span layoutId="audience-pill" className="audience-pill" aria-hidden="true" />}
-              <span className="relative">{option.label}</span>
+            <Link key={option.id} href={option.href} scroll={false} aria-current={active ? "true" : undefined}>
+              {option.label}
+              {active && <motion.span layoutId="audience-line" className="audience-line" aria-hidden="true" />}
             </Link>
           );
         })}
@@ -135,8 +135,10 @@ export function ManagerNote({ periodId }: { periodId: string }) {
   const saved = (demo.overlay.notes[periodId] ?? "") === note;
   return (
     <label className="grid gap-2">
-      <span className="flex items-baseline justify-between gap-2">
-        <span className="section-title">Manager&apos;s note</span>
+      <span className="flex items-baseline justify-between gap-3">
+        <span className="paper-h2">
+          <i>04</i>Manager&apos;s note
+        </span>
         <span className="text-[12px] text-muted-foreground">{note ? (saved ? "Saved in this browser" : "Editing") : "Goes into the PDF"}</span>
       </span>
       <textarea
@@ -144,8 +146,8 @@ export function ManagerNote({ periodId }: { periodId: string }) {
         onChange={(event) => setNote(event.target.value)}
         onBlur={() => demo.setNote(periodId, note)}
         rows={4}
-        className="field min-h-24 resize-y py-2"
-        placeholder="What should the reader take away? For example a decision, a risk, or what happens next."
+        className="paper-note mt-2"
+        placeholder="What should the reader take away? A decision, a risk, or what happens next."
       />
     </label>
   );

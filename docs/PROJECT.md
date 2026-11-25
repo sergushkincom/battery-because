@@ -71,13 +71,14 @@ All data is seeded mock data. There is no live market feed and no environment va
 
 Dense B2B console. Not a marketing page.
 
-- Type: IBM Plex Sans for the interface, IBM Plex Mono for money, power, and time. Tabular figures. Body 13px.
+- Type: IBM Plex Sans for the interface, IBM Plex Mono for money, power, and time. Tabular figures. Body 13px. IBM Plex Serif only on report documents (headline, lede, section titles, key figures).
+- Reports are documents: a paper sheet (`.paper`) on a warm desk, with its own tokens (`--desk`, `--paper`, `--paper-rule`, `--paper-ink`, `--paper-muted`) in both themes. Inside the sheet the console tokens point at the paper ones, so shared parts follow.
 - Colour: navy for actions, amber for attention. Charge is blue (cyan), discharge is amber. Price up and price down are labelled as well as coloured. No mint.
 - Radius 8px on cards, 6px on controls, full round on status chips. Opaque surfaces, 1px borders and a very light card shadow. No blur, no glass, no gradient on the chrome.
 - Type scale: page title 22/28 semibold, section title 15/22 semibold, labels 12 medium muted, body 13. KPI figures 26px mono.
 - Controls: one height (32px), one border, a quiet hover and a 3px ring on keyboard focus. The period switch is a segmented control; selects use one chevron.
 - Status chips carry a coloured dot and a word. Every text and background pair holds WCAG AA in both themes.
-- Motion: 120–220ms ease-out for hover, focus, tabs and new panels; nothing loops except the "needs a decision" pulse, and reduced motion turns it all off. CSS first; the `motion` library only where an element moves between places (the report audience pill), under `MotionConfig reducedMotion="user"`.
+- Motion: 120–220ms ease-out for hover, focus, tabs and new panels; nothing loops except the "needs a decision" pulse, and reduced motion turns it all off. CSS first; the `motion` library only where an element moves between places (the report audience underline), under `MotionConfig reducedMotion="user"`.
 - No Geist.
 - Light theme for owners. Dark theme for operators. Both are complete.
 - References, restyled onto these tokens: shadcn/ui (component primitives), ReUI (data grid, filters, timeline, trace), Twenty (density and the app shell), affectUI (named states and approve / reject).
@@ -110,7 +111,7 @@ Done:
 - The Why bridge builds one bar at a time from the left, with a thin connector drawing in between neighbours. Hover or keyboard focus on a bar or its driver row highlights the pair. Reduced motion shows the finished chart at once.
 - Light and dark themes, EN/DE number formats, keyboard skip link, empty and error states, stale-data state ("Data delayed — last telemetry 14:05").
 - UI pass (Nov 2026): app shell with icons and a mobile menu; a header that stays on one line from phone to desktop; the same five tabs on every asset page; a calendar with weekdays and months; any quarter-hour on the dispatch chart can be picked; tables scroll inside their card on a phone.
-- Reports redesign (Nov 2026): the list is one dense table with revenue, plan, benchmark, availability, incidents and a per-day bar strip for every period, and it marks partial periods. A report opens with its actions in the header, a segmented audience switch, one strip of key figures, revenue per day against plan, the bridge as a ledger on one shared scale, and the summary, incidents and manager's note in a side column. The report's explanation now covers the selected portfolio only; before, its bridge used the whole book.
+- Reports redesign (Nov 2026): reports read as documents, an investor letter on paper. The list is one table on the sheet with revenue, plan, benchmark, availability, incidents and a per-day bar strip, and it marks partial periods. A report is a sheet: a serif headline that states the result against plan ("November: €126,966, 17% under plan."), the explanation as the lede, the audience as underlined words, four key figures, then numbered sections: revenue per day against plan, the bridge as a statement with a double rule under the result, assets and outages, and the manager's note. The report's explanation covers the selected portfolio only; before, its bridge used the whole book.
 - Seeded book, explainer, and tests that the explanation numbers match the computed data.
 - README, screenshots, and a short GIF of the timeline and the "why revenue changed" flow.
 - CI, MIT license (Denys Sergushkin / sergushkincom).
