@@ -51,10 +51,10 @@ export function ReportActions({
       <p role="status" className="mr-1 text-[12px] text-muted-foreground">
         {message}
       </p>
-      <Button onClick={copy}>
+      <Button variant="ghost" onClick={copy}>
         <Copy size={14} aria-hidden="true" /> Copy summary
       </Button>
-      <Button onClick={downloadCsv}>
+      <Button variant="ghost" onClick={downloadCsv}>
         <Download size={14} aria-hidden="true" /> Export CSV
       </Button>
       <Button variant="primary" onClick={downloadPdf}>
