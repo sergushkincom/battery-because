@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { BatteryCharging, ChartLine, FileText, LayoutDashboard, ListChecks, Menu, Moon, PanelLeftClose, PanelLeftOpen, RotateCcw, ScrollText, Sun, X, Zap } from "lucide-react";
+import { CommandMenu, type CommandItem } from "@/components/command-menu";
 import { useDemo } from "@/components/demo-store";
 import { DEMO_NOW } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -40,11 +41,13 @@ export function Shell({
   portfolios,
   assets,
   pendingSeed,
+  reports,
 }: {
   children: React.ReactNode;
   portfolios: ShellPortfolio[];
   assets: ShellAsset[];
   pendingSeed: number;
+  reports: { id: string; label: string; range: string }[];
 }) {
   const path = usePathname();
   const sp = useSearchParams();
@@ -88,6 +91,14 @@ export function Shell({
 
   const keep = href;
 
+  const commands: CommandItem[] = [
+    ...[...NAV, AUDIT].map((item) => ({ id: `page${item.href}`, label: item.label, hint: "Page", href: keep(item.href, {}), group: "Pages" as const, icon: item.icon })),
+    ...assets
+      .filter((item) => item.portfolioId === portfolio)
+      .map((item) => ({ id: `asset-${item.id}`, label: item.name, hint: portfolios.find((p) => p.id === item.portfolioId)?.name ?? "", href: keep(`/assets/${item.id}`, {}), group: "Assets" as const })),
+    ...reports.map((item) => ({ id: `report-${item.id}`, label: item.label, hint: item.range, href: keep(`/reports/${item.id}`, {}), group: "Reports" as const })),
+  ];
+
   // Switching portfolio on an asset that belongs to another portfolio would leave that asset on screen.
   function portfolioHref(next: string) {
     const assetId = path.startsWith("/assets/") ? path.split("/")[2] : null;
@@ -128,15 +139,15 @@ export function Shell({
       <div className="flex min-h-screen">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex w-[248px] flex-col border-r border-border bg-surface transition-[width] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] md:sticky md:top-0 md:z-30 md:h-screen",
+            "dark fixed inset-y-0 left-0 z-50 flex w-[248px] flex-col border-r border-border bg-sidebar text-foreground transition-[width] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] md:sticky md:top-0 md:z-30 md:h-screen",
             collapsed ? "md:w-[60px]" : "md:w-[228px]",
             open ? "flex" : "hidden md:flex",
           )}
           aria-label="Navigation"
         >
-          <div className={cn("flex h-14 shrink-0 items-center gap-2 px-3", collapsed && "md:justify-center md:px-0")}>
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-[7px] bg-primary text-primary-foreground shadow-[0_1px_2px_rgb(16_24_40/0.2)]" aria-hidden="true">
-              <Zap size={15} strokeWidth={2.4} />
+          <div className={cn("flex h-12 shrink-0 items-center gap-2 px-3", collapsed && "md:justify-center md:px-0")}>
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-[7px] bg-primary text-primary-foreground" aria-hidden="true">
+              <Zap size={16} />
             </span>
             <span className={cn("text-[15px] font-semibold tracking-[-0.01em]", collapsed && "md:hidden")}>Because</span>
             <button className="ml-auto flex size-8 items-center justify-center rounded-[6px] text-muted-foreground hover:bg-muted hover:text-foreground md:hidden" aria-label="Close menu" onClick={() => setOpen(false)}>
@@ -161,7 +172,7 @@ export function Shell({
                   )}
                   aria-current={active ? "page" : undefined}
                 >
-                  <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className="shrink-0" aria-hidden="true" />
+                  <Icon size={16} className="shrink-0" aria-hidden="true" />
                   <span className={cn("truncate", collapsed && "md:sr-only")}>{item.label}</span>
                 </Link>
               );
@@ -201,7 +212,7 @@ export function Shell({
         </aside>
         {open && <button className="fixed inset-0 z-40 bg-black/40 md:hidden" aria-label="Close menu" onClick={() => setOpen(false)} />}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-border bg-surface px-3 md:px-6">
+          <header className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border bg-surface px-4 md:px-6">
             <button className="flex size-8 shrink-0 items-center justify-center rounded-[6px] border border-border-strong text-foreground hover:bg-muted md:hidden" aria-label="Open menu" onClick={() => setOpen(true)}>
               <Menu size={16} />
             </button>
@@ -210,7 +221,7 @@ export function Shell({
             </label>
             <select
               id="portfolio"
-              className="field w-auto min-w-0 max-w-[48vw] shrink font-medium sm:max-w-[240px]"
+              className="field w-auto min-w-0 max-w-[48vw] shrink font-medium sm:max-w-[240px] md:shrink-0"
               value={portfolio}
               onChange={(e) => {
                 window.location.href = portfolioHref(e.target.value);
@@ -225,7 +236,8 @@ export function Shell({
             <div className="segmented hidden shrink-0 md:inline-flex" role="group" aria-label="Period">
               {periodLinks}
             </div>
-            <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <CommandMenu items={commands} />
               <p className="num hidden whitespace-nowrap pr-1 text-[12px] text-muted-foreground xl:block">
                 <time dateTime={now}>{clock}</time>
                 <span className="ml-1.5">Berlin</span>

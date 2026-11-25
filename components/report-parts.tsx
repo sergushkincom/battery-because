@@ -8,7 +8,7 @@ export function DayBars({ days, className }: { days: ReportDay[]; className?: st
   const gap = 1;
   const width = days.length * 4 - gap;
   return (
-    <svg viewBox={`0 0 ${width} 20`} preserveAspectRatio="none" className={cn("day-bars block h-5 w-20", className)} aria-hidden="true">
+    <svg viewBox={`0 0 ${width} 20`} preserveAspectRatio="none" className={cn("day-bars block h-4 w-20", className)} aria-hidden="true">
       {days.map((day, index) => {
         const h = Math.max(1, (Math.max(0, day.cents) / max) * 20);
         return <rect key={day.date} x={index * 4} y={20 - h} width={4 - gap} height={h} rx="0.5" fill={day.outage ? "var(--accent)" : "var(--series-da)"} opacity={day.outage ? 1 : 0.55} />;
@@ -17,14 +17,17 @@ export function DayBars({ days, className }: { days: ReportDay[]; className?: st
   );
 }
 
-export interface StatementRow {
+export interface BridgeRow {
   key: string;
   label: string;
   cents: number;
 }
 
-/** The bridge read as a statement: the opening figure, one indented line per driver, the result under a double rule. */
-export function BridgeStatement({
+/**
+ * The bridge as a table: forecast, one row per driver with a bar on a shared zero line, actual.
+ * Rows use the shared table pattern, so they are as high as every other table row.
+ */
+export function BridgeTable({
   openLabel,
   openCents,
   closeLabel,
@@ -36,31 +39,62 @@ export function BridgeStatement({
   openCents: number;
   closeLabel: string;
   closeCents: number;
-  rows: StatementRow[];
+  rows: BridgeRow[];
   locale: Locale;
 }) {
+  const maxAbs = Math.max(1, ...rows.map((row) => Math.abs(row.cents)));
+  const net = closeCents - openCents;
   return (
-    <table className="statement">
-      <caption className="sr-only">Revenue bridge</caption>
-      <tbody>
-        <tr className="open">
-          <th scope="row">{openLabel}</th>
-          <td>{formatEUR(openCents, locale, 0)}</td>
-        </tr>
-        {rows.map((row) => (
-          <tr key={row.key}>
-            <th scope="row" className="indent">
-              {row.label}
+    <div className="overflow-x-auto">
+      <table className="table-grid">
+        <caption className="sr-only">Revenue bridge from forecast to actual</caption>
+        <thead>
+          <tr>
+            <th scope="col">Driver</th>
+            <th scope="col" className="hidden sm:table-cell">
+              <span className="sr-only">Size</span>
             </th>
-            <td className={row.cents > 0 ? "text-up" : row.cents < 0 ? "text-down" : "text-muted-foreground"}>{formatSignedEUR(row.cents, locale, 0)}</td>
+            <th scope="col" className="text-right">
+              Amount
+            </th>
           </tr>
-        ))}
-        <tr className="close">
-          <th scope="row">{closeLabel}</th>
-          <td>{formatEUR(closeCents, locale, 0)}</td>
-        </tr>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <tr className="font-semibold">
+            <th scope="row" className="whitespace-nowrap">
+              {openLabel}
+            </th>
+            <td className="hidden sm:table-cell" />
+            <td className="num text-right">{formatEUR(openCents, locale, 0)}</td>
+          </tr>
+          {rows.map((row) => {
+            const up = row.cents > 0;
+            return (
+              <tr key={row.key}>
+                <th scope="row" className="whitespace-nowrap">
+                  {row.label}
+                </th>
+                <td className="hidden w-[40%] sm:table-cell">
+                  <span className="bridge-track" aria-hidden="true">
+                    <i className={up ? "bg-primary" : "bg-down"} style={{ width: `${Math.max(0.8, (Math.abs(row.cents) / maxAbs) * 50)}%`, [up ? "left" : "right"]: "50%" }} />
+                  </span>
+                </td>
+                <td className={cn("num text-right", up ? "text-up" : row.cents < 0 ? "text-down" : "text-muted-foreground")}>{formatSignedEUR(row.cents, locale, 0)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row" className="whitespace-nowrap text-left font-semibold">
+              {closeLabel}
+            </th>
+            <td className={cn("num hidden sm:table-cell", net > 0 ? "text-up" : net < 0 ? "text-down" : "text-muted-foreground")}>{formatSignedEUR(net, locale, 0)} net</td>
+            <td className="num text-right">{formatEUR(closeCents, locale, 0)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
   );
 }
 

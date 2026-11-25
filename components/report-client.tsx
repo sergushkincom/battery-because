@@ -15,13 +15,13 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export function AudienceSwitch({ options, current }: { options: { id: string; label: string; href: string }[]; current: string }) {
   return (
     <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: EASE }}>
-      <nav aria-label="Audience" className="audience">
+      <nav aria-label="Audience" className="audience-tabs">
         {options.map((option) => {
           const active = option.id === current;
           return (
             <Link key={option.id} href={option.href} scroll={false} aria-current={active ? "true" : undefined}>
               {option.label}
-              {active && <motion.span layoutId="audience-line" className="audience-line" aria-hidden="true" />}
+              {active && <motion.span layoutId="audience-line" className="audience-tabs-line" aria-hidden="true" />}
             </Link>
           );
         })}
@@ -136,9 +136,7 @@ export function ManagerNote({ periodId }: { periodId: string }) {
   return (
     <label className="grid gap-2">
       <span className="flex items-baseline justify-between gap-3">
-        <span className="paper-h2">
-          <i>04</i>Manager&apos;s note
-        </span>
+        <span className="item-title">Manager&apos;s note</span>
         <span className="text-[12px] text-muted-foreground">{note ? (saved ? "Saved in this browser" : "Editing") : "Goes into the PDF"}</span>
       </span>
       <textarea
@@ -146,7 +144,7 @@ export function ManagerNote({ periodId }: { periodId: string }) {
         onChange={(event) => setNote(event.target.value)}
         onBlur={() => demo.setNote(periodId, note)}
         rows={4}
-        className="paper-note mt-2"
+        className="field h-auto min-h-24 resize-y py-2"
         placeholder="What should the reader take away? A decision, a risk, or what happens next."
       />
     </label>

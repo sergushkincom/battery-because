@@ -1,101 +1,93 @@
 @import "tailwindcss";
 
 /*
- * Because — design tokens.
- * Navy for action, amber for attention, cyan for charge. Neutral, opaque surfaces.
- * Every text/background pair below holds WCAG AA (4.5:1) in both themes.
+ * Because — design tokens ("Volt").
+ * Three semantic layers: background (background, surface, card, muted), text (foreground, muted-foreground) and border.
+ * Electric violet for action and for the revenue series, orange for attention and outages, teal for charge.
+ * Status colours (up, down, attention) are only for real states, never decoration.
+ * Spacing is a 4px grid (Tailwind's default unit). Every text/background pair holds WCAG AA in both themes.
  */
 :root {
-  --background: #f5f6f8;
+  --background: #f4f3f8;
   --surface: #ffffff;
   --card: #ffffff;
-  --foreground: #101828;
-  --muted: #f0f2f5;
-  --muted-strong: #e6e9ee;
-  --muted-foreground: #586274;
-  --border: #e2e5ea;
-  --border-strong: #cdd3db;
-  --ring: #3557c4;
-  --primary: #1f3a93;
-  --primary-hover: #182f7a;
+  --foreground: #16131f;
+  --muted: #f1eff7;
+  --muted-strong: #e7e4f0;
+  --muted-foreground: #5c5772;
+  --border: #e4e1ee;
+  --border-strong: #cdc8dd;
+  --ring: #7a55f0;
+  --primary: #5a2be0;
+  --primary-hover: #4a1fc4;
   --primary-foreground: #ffffff;
-  --primary-soft: #edf1fb;
-  --accent: #b45309;
-  --accent-hover: #9a4708;
+  --primary-soft: #efeafd;
+  --accent: #c2410c;
+  --accent-hover: #a3360a;
   --accent-foreground: #ffffff;
-  --accent-soft: #fdf3e7;
-  --destructive: #b42318;
+  --accent-soft: #fff1e8;
+  --destructive: #c4231b;
   --charge: #0e7490;
-  --discharge: #b45309;
-  --price-up: #157f3c;
-  --price-down: #b42318;
-  --idle: #64748b;
-  --system: #1f3a93;
-  --needs-human: #a64b07;
-  --approved: #334155;
+  --discharge: #c2410c;
+  --price-up: #0f7a3f;
+  --price-down: #c4231b;
+  --idle: #6b6780;
+  --system: #5a2be0;
+  --needs-human: #b23c0b;
+  --approved: #3b3650;
   --rejected: #9f1239;
-  --series-da: #1f3a93;
-  --series-id: #6366f1;
-  --series-soc: #475569;
+  --series-da: #5a2be0;
+  --series-id: #a17cf7;
+  --series-soc: #4b4660;
   --series-cap: #0e7490;
-  --series-fcr: #64748b;
-  --shadow-sheet: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.05);
-  --shadow-pop: 0 8px 24px -6px rgb(16 24 40 / 0.16), 0 2px 6px rgb(16 24 40 / 0.06);
+  --series-fcr: #6b6780;
+  /* The navigation is always dark: the sidebar carries the .dark scope, so it uses the dark tokens inside. */
+  --sidebar: #16131f;
+  --shadow-sheet: 0 1px 2px rgb(22 19 31 / 0.04), 0 1px 3px rgb(22 19 31 / 0.05);
+  --shadow-pop: 0 8px 24px -6px rgb(22 19 31 / 0.18), 0 2px 6px rgb(22 19 31 / 0.06);
   --radius: 8px;
-  /* Report documents: a warm desk and a paper sheet. Ink and rules are tuned for AA on the sheet. */
-  --desk: #efebe3;
-  --paper: #fffdf8;
-  --paper-rule: #ddd6c8;
-  --paper-dot: #cfc6b5;
-  --paper-ink: #1d1c1a;
-  --paper-muted: #6f685c;
-  --paper-shadow: 0 1px 0 #e4ddcf, 0 20px 40px -24px rgb(60 45 20 / 0.25);
+  --row: 36px;
+  --ring-width: 3px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
-  --background: #0a0f1a;
-  --surface: #0f1625;
-  --card: #111a2b;
-  --foreground: #e6ebf2;
-  --muted: #172236;
-  --muted-strong: #1e2b42;
-  --muted-foreground: #94a1b6;
-  --border: #1f2c42;
-  --border-strong: #2b3b56;
-  --ring: #8fb0ff;
-  --primary: #8fb0ff;
-  --primary-hover: #a9c2ff;
-  --primary-foreground: #0a0f1a;
-  --primary-soft: #162446;
-  --accent: #f2a93b;
-  --accent-hover: #f6bb5f;
-  --accent-foreground: #1a1206;
-  --accent-soft: #2a1f10;
-  --destructive: #f07766;
+  --background: #0d0b14;
+  --surface: #15121e;
+  --card: #17141f;
+  --foreground: #ece9f5;
+  --muted: #1f1a2b;
+  --muted-strong: #2a2438;
+  --muted-foreground: #a6a0bd;
+  --border: #2a2439;
+  --border-strong: #3c3452;
+  --ring: #b29bff;
+  --primary: #a68bff;
+  --primary-hover: #baa5ff;
+  --primary-foreground: #0d0b14;
+  --primary-soft: #241c40;
+  --accent: #ff8a4c;
+  --accent-hover: #ffa173;
+  --accent-foreground: #1a0c04;
+  --accent-soft: #2e1a10;
+  --destructive: #ff7a6e;
   --charge: #2cc1d6;
-  --discharge: #f2a93b;
-  --price-up: #3fcf7a;
-  --price-down: #f07766;
-  --idle: #94a1b6;
-  --system: #8fb0ff;
-  --needs-human: #f2a93b;
-  --approved: #a7b3c5;
+  --discharge: #ff8a4c;
+  --price-up: #4ade80;
+  --price-down: #ff7a6e;
+  --idle: #a6a0bd;
+  --system: #a68bff;
+  --needs-human: #ff9a5c;
+  --approved: #b8b2cc;
   --rejected: #fb7185;
-  --series-da: #8fb0ff;
-  --series-id: #b4b8ff;
-  --series-soc: #a7b3c5;
+  --series-da: #a68bff;
+  --series-id: #d4c4ff;
+  --series-soc: #b8b2cc;
   --series-cap: #2cc1d6;
-  --series-fcr: #94a1b6;
+  --series-fcr: #a6a0bd;
+  --sidebar: #110e19;
   --shadow-sheet: 0 0 0 1px rgb(0 0 0 / 0.2);
   --shadow-pop: 0 12px 32px -8px rgb(0 0 0 / 0.6);
-  --desk: #0d0c0a;
-  --paper: #17150f;
-  --paper-rule: #2e2a22;
-  --paper-dot: #3a352b;
-  --paper-ink: #ece6da;
-  --paper-muted: #a69d8c;
-  --paper-shadow: 0 0 0 1px #2e2a22, 0 20px 40px -24px rgb(0 0 0 / 0.7);
 }
 
 @theme inline {
@@ -127,9 +119,9 @@
   --color-needs: var(--needs-human);
   --color-approved: var(--approved);
   --color-rejected: var(--rejected);
+  --color-sidebar: var(--sidebar);
   --font-sans: var(--font-plex-sans), "IBM Plex Sans", sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
-  --font-serif: var(--font-plex-serif), "IBM Plex Serif", Georgia, serif;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
@@ -161,8 +153,15 @@ body {
 /* Base layer: component utilities (outline-none, colours) always win over these. */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
+    outline: var(--ring-width) solid var(--ring);
+    outline-offset: 1px;
+  }
+  /* Icons draw a 1.1px line at every size. */
+  svg.lucide {
+    stroke-width: 1.1;
+  }
+  svg.lucide * {
+    vector-effect: non-scaling-stroke;
   }
   a {
     transition: color 120ms var(--ease-out);
@@ -349,9 +348,11 @@ body {
     width: 100%;
     border-collapse: collapse;
   }
+  /* One table pattern everywhere: every row is var(--row) high, cells pad on the 4px grid. */
   .table-grid th,
   .table-grid td {
-    padding: 10px 14px;
+    height: var(--row);
+    padding: 0 16px;
     border-bottom: 1px solid var(--border);
     text-align: left;
     vertical-align: middle;
@@ -378,7 +379,8 @@ body {
   .table-grid .num {
     white-space: nowrap;
   }
-  .table-grid tfoot td {
+  .table-grid tfoot td,
+  .table-grid tfoot th {
     font-weight: 600;
     background: var(--surface);
     border-top: 1px solid var(--border);
@@ -509,7 +511,7 @@ body {
 }
 
 .bridge-bar:focus-visible {
-  outline: 2px solid var(--ring);
+  outline: var(--ring-width) solid var(--ring);
   outline-offset: 2px;
 }
 
@@ -561,246 +563,69 @@ body {
   }
 }
 
-/* Reports are documents: a paper sheet on a warm desk. Inside the sheet the console tokens point at paper tokens,
-   so shared parts (chart, delta, fields) pick up the paper look without a second set of components. */
-body:has(.paper-desk) main {
-  background: var(--desk);
+/* ⌘K menu */
+.command-menu {
+  width: min(560px, calc(100vw - 32px));
+  margin: 12vh auto auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+  box-shadow: var(--shadow-pop);
 }
-.paper {
-  --border: var(--paper-rule);
-  --border-strong: var(--paper-ink);
-  --foreground: var(--paper-ink);
-  --muted-foreground: var(--paper-muted);
-  --card: var(--paper);
-  --surface: var(--paper);
-  --muted: color-mix(in srgb, var(--paper-rule) 45%, var(--paper));
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 56px 64px 40px;
-  color: var(--paper-ink);
-  background: var(--paper);
-  border: 1px solid var(--paper-rule);
-  box-shadow: var(--paper-shadow);
-  font-size: 14px;
+.command-menu::backdrop {
+  background: rgb(9 7 14 / 0.4);
 }
-@media (max-width: 720px) {
-  .paper {
-    padding: 28px 20px 24px;
+@media (prefers-reduced-motion: no-preference) {
+  .command-menu[open] {
+    animation: fade-up 160ms var(--ease-out) both;
   }
-}
-.paper-eyebrow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4px 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--paper-ink);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--paper-muted);
-}
-.paper-title {
-  margin: 32px 0 16px;
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: 44px;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-.paper-title em {
-  font-style: italic;
-  color: var(--primary);
-}
-@media (max-width: 720px) {
-  .paper-title {
-    font-size: 30px;
-    margin-top: 22px;
-  }
-}
-.paper-lede {
-  max-width: 62ch;
-  font-family: var(--font-serif);
-  font-size: 18px;
-  line-height: 1.6;
-  color: color-mix(in srgb, var(--paper-ink) 85%, var(--paper));
-}
-.paper-lede + .paper-lede {
-  margin-top: 10px;
-}
-.paper-figures {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-top: 1px solid var(--paper-rule);
-  border-bottom: 1px solid var(--paper-rule);
-}
-.paper-figures > div {
-  padding: 18px 0 16px;
-}
-.paper-figures > div + div {
-  padding-left: 18px;
-  border-left: 1px solid var(--paper-rule);
-}
-@media (max-width: 720px) {
-  .paper-figures {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .paper-figures > div:nth-child(3) {
-    padding-left: 0;
-    border-left: 0;
-  }
-  .paper-figures > div:nth-child(n + 3) {
-    border-top: 1px solid var(--paper-rule);
-  }
-}
-.paper-label {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--paper-muted);
-}
-.paper-figure {
-  margin: 6px 0 2px;
-  font-family: var(--font-serif);
-  font-size: 28px;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  font-variant-numeric: lining-nums tabular-nums;
-  white-space: nowrap;
-}
-@media (max-width: 720px) {
-  .paper-figure {
-    font-size: 22px;
-  }
-}
-.paper-section {
-  margin-top: 44px;
-}
-.paper-h2 {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  font-family: var(--font-serif);
-  font-weight: 500;
-  font-size: 20px;
-  line-height: 1.3;
-}
-.paper-h2 > i {
-  font-style: normal;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--accent);
-}
-.paper-caption {
-  margin: 4px 0 16px;
-  font-size: 13px;
-  color: var(--paper-muted);
 }
 
-/* Audience: plain words, the selected one underlined in amber. The underline slides (Motion). */
-.audience {
+/* Reports: audience tabs. The underline moves between tabs (Motion). */
+.audience-tabs {
   display: flex;
-  gap: 20px;
-  margin: 26px 0 28px;
-  font-size: 13px;
+  gap: 24px;
+  border-bottom: 1px solid var(--border);
 }
-.audience a {
+.audience-tabs a {
   position: relative;
-  padding-bottom: 4px;
-  color: var(--paper-muted);
+  padding-bottom: 8px;
+  color: var(--muted-foreground);
   transition: color 140ms var(--ease-out);
 }
-.audience a:hover,
-.audience a[aria-current="true"] {
-  color: var(--paper-ink);
+.audience-tabs a:hover,
+.audience-tabs a[aria-current="true"] {
+  color: var(--foreground);
 }
-.audience a[aria-current="true"] {
+.audience-tabs a[aria-current="true"] {
   font-weight: 500;
 }
-.audience-line {
+.audience-tabs-line {
   position: absolute;
   left: 0;
   right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--primary);
+}
+
+/* Reports: the bridge bar sits on a zero line in the middle of its cell. */
+.bridge-track {
+  position: relative;
+  display: block;
+  height: 8px;
+  background: linear-gradient(var(--border-strong), var(--border-strong)) center / 1px 100% no-repeat;
+}
+.bridge-track > i {
+  position: absolute;
+  top: 0;
   bottom: 0;
-  height: 1.5px;
-  background: var(--accent);
+  border-radius: 2px;
 }
 
-/* The bridge as a statement: dotted rows, a rule under the opening line, a double rule under the result. */
-.statement {
-  width: 100%;
-  border-collapse: collapse;
-}
-.statement th,
-.statement td {
-  padding: 8px 0;
-  border-bottom: 1px dotted var(--paper-dot);
-  text-align: left;
-  font-weight: 400;
-}
-.statement td:last-child,
-.statement th + td {
-  text-align: right;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  white-space: nowrap;
-}
-.statement .indent {
-  padding-left: 18px;
-}
-.statement .open > * {
-  font-weight: 600;
-  border-bottom: 1px solid var(--paper-ink);
-}
-.statement .close > * {
-  font-weight: 600;
-  border-top: 1px solid var(--paper-ink);
-  border-bottom: 3px double var(--paper-ink);
-}
-.statement .quiet {
-  color: var(--paper-muted);
-  font-size: 13px;
-}
-.statement tbody tr:not(.open):not(.close):hover {
-  background: color-mix(in srgb, var(--paper-rule) 30%, transparent);
-}
-
-.paper-footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 40px;
-  padding-top: 14px;
-  border-top: 1px solid var(--paper-rule);
-  font-size: 12px;
-  color: var(--paper-muted);
-}
-.paper-note {
-  width: 100%;
-  min-height: 96px;
-  padding: 12px 14px;
-  border: 1px solid var(--paper-rule);
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--paper-rule) 18%, var(--paper));
-  font-family: var(--font-serif);
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--paper-ink);
-  resize: vertical;
-}
-.paper-note::placeholder {
-  color: var(--paper-muted);
-}
-.paper-note:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 1px;
-}
-
-/* Reports list: one table on the sheet. */
+/* Reports list: the period name is the link; its hit area covers the row. */
 .report-row {
   position: relative;
 }
@@ -813,8 +638,8 @@ body:has(.paper-desk) main {
   outline: none;
 }
 .report-row:has(.report-link:focus-visible) {
-  outline: 2px solid var(--ring);
-  outline-offset: -2px;
+  outline: var(--ring-width) solid var(--ring);
+  outline-offset: -3px;
 }
 .report-row:hover .report-link {
   color: var(--primary);
@@ -830,34 +655,19 @@ body:has(.paper-desk) main {
   width: 12px;
   border-top: 1.5px dashed color-mix(in srgb, var(--foreground) 60%, transparent);
 }
-.statement td.quiet {
-  text-align: left;
-  font-family: inherit;
-  font-size: 13px;
-  white-space: normal;
-  color: var(--paper-muted);
+
+/* Key figures share one card, split by hairlines. */
+.kpi-cell {
+  border-color: var(--border);
 }
-/* The period table on the sheet: no grey header band, ink rule under the header, tighter columns. */
-.paper .report-table thead th {
-  background: transparent;
-  border-bottom: 1px solid var(--paper-ink);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.kpi-cell:nth-child(n + 2) {
+  border-left-width: 1px;
 }
-.paper .report-table th,
-.paper .report-table td {
-  padding-left: 8px;
-  padding-right: 8px;
-}
-.paper .report-table tr > :first-child {
-  padding-left: 0;
-}
-.paper .report-table tr > :last-child {
-  padding-right: 0;
-}
-.paper .report-table tbody td,
-.paper .report-table tbody th {
-  border-bottom-style: dotted;
-  border-bottom-color: var(--paper-dot);
+@media (max-width: 1023px) {
+  .kpi-cell:nth-child(3) {
+    border-left-width: 0;
+  }
+  .kpi-cell:nth-child(n + 3) {
+    border-top-width: 1px;
+  }
 }

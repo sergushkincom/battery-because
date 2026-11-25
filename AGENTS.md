@@ -8,7 +8,7 @@ Read [docs/PROJECT.md](docs/PROJECT.md) before changing this repo. It is the pas
 - Never name the real company this concept is inspired by. Never name an optimiser brand outside the competitor table in the README. `npm run check:names` fails the build if one appears anywhere else. Do not add those names to docs, UI, tests, or commit messages.
 - One change per PR. Open the PR. The owner merges.
 - Mock data only. No env vars and no external market APIs. Explanation numbers must match the computed book; extend the tests in `tests/invariants.test.ts` when you change the bridge or the sentences.
-- Keep the look in the passport: IBM Plex Sans and Mono, navy and amber, charge blue and discharge amber, 6px radius, opaque surfaces. No blur, no Geist, no mint.
+- Keep the look in the passport: IBM Plex Sans and Mono, the Volt palette (electric violet for action, orange for attention, teal for charge), a 4px grid, one table row height, one primary action per view, 6px radius, opaque surfaces. No blur, no Geist, no mint.
 
 ## Checks
 

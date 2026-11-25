@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { Suspense } from "react";
 import { DemoProvider } from "@/components/demo-store";
 import { Shell } from "@/components/shell";
 import { getDataset } from "@/lib/mock/generate";
+import { REPORTS } from "@/lib/reports";
+import { formatDayShort } from "@/lib/time";
 import "./globals.css";
 
 const sans = IBM_Plex_Sans({
@@ -16,14 +18,6 @@ const mono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   variable: "--font-plex-mono",
-});
-
-/* Serif is for documents only: the report sheet. The console stays in Plex Sans. */
-const serif = IBM_Plex_Serif({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
-  variable: "--font-plex-serif",
 });
 
 export const metadata: Metadata = {
@@ -42,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pending = ds.approvals.filter((item) => item.state === "pending").length;
 
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -53,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased">
         <DemoProvider>
           <Suspense fallback={<div className="p-6 text-muted-foreground">Loading the book…</div>}>
-            <Shell portfolios={ds.portfolios.map((p) => ({ id: p.id, name: p.name }))} assets={assets} pendingSeed={pending}>
+            <Shell portfolios={ds.portfolios.map((p) => ({ id: p.id, name: p.name }))} assets={assets} pendingSeed={pending} reports={REPORTS.map((r) => ({ id: r.id, label: r.label, range: `${formatDayShort(r.from)} – ${formatDayShort(r.to)}` }))}>
               {children}
             </Shell>
           </Suspense>
