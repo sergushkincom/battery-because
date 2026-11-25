@@ -77,7 +77,7 @@ Dense B2B console. Not a marketing page.
 - Type scale: page title 22/28 semibold, section title 15/22 semibold, labels 12 medium muted, body 13. KPI figures 26px mono.
 - Controls: one height (32px), one border, a quiet hover and a 3px ring on keyboard focus. The period switch is a segmented control; selects use one chevron.
 - Status chips carry a coloured dot and a word. Every text and background pair holds WCAG AA in both themes.
-- Motion: 120–220ms ease-out for hover, focus, tabs and new panels; nothing loops except the "needs a decision" pulse, and reduced motion turns it all off.
+- Motion: 120–220ms ease-out for hover, focus, tabs and new panels. Portfolio revenue, versus plan, versus the market benchmark, and discharged energy count up once from zero when the card enters the view, then the reason line slides in. Nothing loops except the "needs a decision" pulse. Reduced motion shows the finished figures.
 - No Geist.
 - Light theme for owners. Dark theme for operators. Both are complete.
 - References, restyled onto these tokens: shadcn/ui (component primitives), ReUI (data grid, filters, timeline, trace), Twenty (density and the app shell), affectUI (named states and approve / reject).
@@ -108,6 +108,7 @@ Done:
 
 - Portfolio, asset day, why-bridge, autonomy and approvals, maintenance window, audit log, reports (PDF and CSV), operator queue, go-live stepper, markets.
 - The Why bridge builds one bar at a time from the left, with a thin connector drawing in between neighbours. Hover or keyboard focus on a bar or its driver row highlights the pair. Reduced motion shows the finished chart at once.
+- Portfolio revenue, versus plan, versus the market benchmark, and discharged energy count up from zero the first time the card is in view. The reason line slides in when the count stops. Reduced motion shows the finished figures.
 - Light and dark themes, EN/DE number formats, keyboard skip link, empty and error states, stale-data state ("Data delayed — last telemetry 14:05").
 - UI pass (Nov 2026): app shell with icons and a mobile menu; a header that stays on one line from phone to desktop; the same five tabs on every asset page; a calendar with weekdays and months; any quarter-hour on the dispatch chart can be picked; tables scroll inside their card on a phone.
 - Seeded book, explainer, and tests that the explanation numbers match the computed data.

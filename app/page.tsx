@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { AssetTable } from "@/components/asset-table";
 import { StackedMarkets } from "@/components/charts";
+import { KpiCard } from "@/components/kpi-card";
 import { StateChip } from "@/components/state-chip";
-import { formatEUR, formatNumber, formatPct, formatSignedEUR } from "@/lib/format";
+import { formatEUR, formatNumber, formatPct } from "@/lib/format";
 import { marketPosition } from "@/lib/explain";
 import { POSITION_LABEL } from "@/lib/labels";
 import { loadView, linkTo, portfolioExplain, tradingInPortfolio } from "@/lib/page-model";
@@ -59,35 +60,61 @@ export default async function PortfolioPage({
         <DataLine today={view.window.to === DEMO_TODAY} />
       </header>
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-5" aria-label="Portfolio figures">
-        <Kpi label="Revenue" value={formatEUR(metrics.totalCents, q.locale, 0)} meta={`${formatNumber(perMwYear, q.locale, 0)} €/MW/yr`} reason={view.explanation.headline} />
-        <Kpi
+        <KpiCard
+          id="revenue"
+          label="Revenue"
+          kind="eur"
+          target={metrics.totalCents}
+          locale={q.locale}
+          meta={`${formatNumber(perMwYear, q.locale, 0)} €/MW/yr`}
+          reason={view.explanation.headline}
+        />
+        <KpiCard
+          id="plan"
           label="Vs plan"
-          value={formatSignedEUR(metrics.totalCents - metrics.planCents, q.locale, 0)}
+          kind="signed-eur"
+          target={metrics.totalCents - metrics.planCents}
+          locale={q.locale}
           meta={formatPct(vsPlan)}
           tone={vsPlan >= 0 ? "up" : "down"}
           reason={reason}
         />
-        <Kpi
+        <KpiCard
+          id="benchmark"
           label="Vs market"
-          value={formatSignedEUR(metrics.totalCents - metrics.benchmarkCents, q.locale, 0)}
+          kind="signed-eur"
+          target={metrics.totalCents - metrics.benchmarkCents}
+          locale={q.locale}
           meta={POSITION_LABEL[position]}
           tone={position === "below" ? "down" : position === "above" ? "up" : "flat"}
           reason="Benchmark is a same-size battery with perfect hindsight, then 80%."
         />
-        <Kpi
+        <KpiCard
+          id="energy"
           label="Energy"
-          value={`${formatNumber(metrics.dischargedMwh, q.locale, 0)} MWh`}
+          kind="mwh"
+          target={metrics.dischargedMwh}
+          locale={q.locale}
           meta={`${formatNumber(charged, q.locale, 0)} MWh charged`}
           reason={`Availability ${Math.round(metrics.availabilityPct)}% · ${metrics.cycles.toFixed(1)} cycles on average.`}
         />
-        <Kpi
+        <KpiCard
+          id="decisions"
           label="Open decisions"
-          value={String(pending)}
+          kind="static"
+          text={String(pending)}
+          locale={q.locale}
           meta={pending ? "Needs a decision" : "System running"}
           tone={pending ? "attention" : "flat"}
           reason={pending ? "A cycle-budget request is waiting on a person." : "Nothing is waiting on a person in this portfolio."}
         />
       </section>
+      {/* Parser-blocking, so the first paint is already zero when motion is allowed. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches){document.querySelectorAll("[data-zero]").forEach(function(node){node.textContent=node.getAttribute("data-zero");var card=node.closest("article");var reason=card&&card.querySelector(".kpi-reason");if(reason&&reason.getAttribute("data-state")==="ssr")reason.setAttribute("data-state","wait");});}}catch(e){}`,
+        }}
+      />
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
         <article className="card p-5">
           <h2 className="section-title">Revenue by market</h2>
@@ -171,30 +198,6 @@ function groupByDate(rows: ReturnType<typeof portfolioExplain>["actual"]) {
     map.set(row.date, current);
   }
   return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
-}
-
-function Kpi({
-  label,
-  value,
-  meta,
-  reason,
-  tone = "flat",
-}: {
-  label: string;
-  value: string;
-  meta: string;
-  reason: string;
-  tone?: "up" | "down" | "flat" | "attention";
-}) {
-  const metaClass = tone === "up" ? "text-up" : tone === "down" ? "text-down" : tone === "attention" ? "text-needs" : "text-muted-foreground";
-  return (
-    <article className="card flex flex-col px-4 py-4">
-      <h2 className="label">{label}</h2>
-      <p className="num mt-2 text-[26px] font-medium leading-[30px] tracking-[-0.02em]">{value}</p>
-      <p className={`num mt-1 text-[12px] font-medium ${metaClass}`}>{meta}</p>
-      <p className="mt-3 line-clamp-3 border-t border-border pt-3 text-[12px] leading-[18px] text-muted-foreground">{reason}</p>
-    </article>
-  );
 }
 
 function DataLine({ today }: { today: boolean }) {
