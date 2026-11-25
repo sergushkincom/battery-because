@@ -46,3 +46,13 @@ export function eurosRounded(cents: number): number {
 export function parseLocale(value: string | undefined): Locale {
   return value === "de-DE" ? "de-DE" : "en-GB";
 }
+
+export type CountKind = "eur" | "signed-eur" | "mwh";
+
+/** Same formatters as the static cards. `target` keeps a signed zero on the sign it will land on. */
+export function formatCount(kind: CountKind, target: number, amount: number, locale: Locale = "en-GB"): string {
+  if (kind === "mwh") return `${formatNumber(amount, locale, 0)} MWh`;
+  if (kind === "eur") return formatEUR(amount, locale, 0);
+  const sign = target > 0 ? "+" : target < 0 ? "−" : "";
+  return `${sign}${formatEUR(Math.abs(amount), locale, 0)}`;
+}
