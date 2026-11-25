@@ -105,6 +105,8 @@ export function explainWindow(
   ds: Dataset,
   opts: {
     assetId: string | null;
+    /** Limit a portfolio explanation to these assets. Without it, `assetId: null` means the whole book. */
+    assetIds?: ReadonlySet<string>;
     from: string;
     to: string;
     mode: "previous" | "forecast";
@@ -114,15 +116,16 @@ export function explainWindow(
   },
 ): Explanation {
   const asset = opts.assetId ? ds.assets.find((a) => a.id === opts.assetId) : undefined;
-  const actual = sliceDays(ds.daily, opts.assetId, opts.from, opts.to);
+  const scope = <T extends { assetId: string }>(rows: T[]): T[] => (opts.assetIds ? rows.filter((row) => opts.assetIds!.has(row.assetId)) : rows);
+  const actual = scope(sliceDays(ds.daily, opts.assetId, opts.from, opts.to));
   let baseline: DailyRevenue[] = [];
   if (opts.mode === "forecast") {
-    baseline = sliceDays(ds.forecastDaily, opts.assetId, opts.from, opts.to);
+    baseline = scope(sliceDays(ds.forecastDaily, opts.assetId, opts.from, opts.to));
   } else {
     const len = daysBetween(opts.from, opts.to);
     const prevTo = addDays(opts.from, -1);
     const prevFrom = addDays(prevTo, -(len - 1));
-    baseline = sliceDays(ds.daily, opts.assetId, prevFrom, prevTo);
+    baseline = scope(sliceDays(ds.daily, opts.assetId, prevFrom, prevTo));
   }
   const metrics = rollup(actual);
   return explain({
@@ -133,7 +136,7 @@ export function explainWindow(
     baselineLabel: opts.baselineLabel,
     weather: ds.weatherDaily,
     country: asset?.country ?? "DE",
-    outages: ds.outages,
+    outages: scope(ds.outages),
     planCents: metrics.planCents,
     benchmarkCents: metrics.benchmarkCents,
     locale: opts.locale,

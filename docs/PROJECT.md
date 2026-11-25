@@ -114,6 +114,7 @@ Done:
 - Seeded book, explainer, and tests that the explanation numbers match the computed data.
 - README, screenshots, and a short GIF of the timeline and the "why revenue changed" flow.
 - CI, MIT license (Denys Sergushkin / sergushkincom).
+- Portfolio's revenue reason now explains the selected portfolio only. Before, `portfolioExplain` passed no asset scope, so Stadtwerk Elbe and Kestrel Fund I both showed the whole book's change (for example −€194,012 over 7 days instead of −€35,610 and −€158,402).
 
 The live URL in the README (`https://battery-because.vercel.app`) is a placeholder. v1 is not deployed.
 
