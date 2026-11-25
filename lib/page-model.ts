@@ -41,6 +41,7 @@ export function portfolioExplain(ds: Dataset, q: ViewQuery) {
     actual,
     explanation: explainWindow(ds, {
       assetId: null,
+      assetIds: ids,
       from: window.from,
       to: window.to,
       mode: window.mode,
